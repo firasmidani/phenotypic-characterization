@@ -9,14 +9,6 @@
 
 #### ADOPTED FROM DR. JAMES COLLINS (BCM). See NewPlateReader2018.py
 
-PM_LIST = [Carbon1,
-          Carbon2,
-          Nitrogen,
-          PhosphorusAndSulfur,
-          PeptideNitrogen1,
-          PeptideNitrogen2,
-          PeptideNitrogen3]
-
 Carbon1 = ["Negative Control",
          "L-Arabanose",
          "N-Acetyl-D-Glucosamine",
@@ -27,7 +19,7 @@ Carbon1 = ["Negative Control",
          "L-Proline",
          "D-Alanine",
          "D-Trehalose",
-         "D-Manose",
+         "D-Mannose",
          "Dulcitol",
          "D-Serine",
          "D-Sorbitol",
@@ -695,3 +687,12 @@ PeptideNitrogen3 = ["Negative Control",
         "Leu-Leu-Leu",
         "Phe-Gly-Gly",
         "Tyr-Gly-Gl"]
+
+
+PM_LIST = [Carbon1,
+          Carbon2,
+          Nitrogen,
+          PhosphorusAndSulfur,
+          PeptideNitrogen1,
+          PeptideNitrogen2,
+          PeptideNitrogen3]
