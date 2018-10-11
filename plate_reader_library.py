@@ -147,10 +147,103 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 
 		if filepath=="":
 
-			filepath = "/Users/firasmidani/Downloads/plotGrowthData-%s.pdf" % getFormattedTime()
+			filepath = "/Users/firasmidani/Downloads/plotPlateGrowth-%s.pdf" % getFormattedTime()
 	
 		plt.savefig(filepath,filetype='pdf')
 
+def subPlotSplit(df,nCols=4):
+    ''' 
+    With a limit of four columns in a sub-plot grid
+    '''
+    
+    number = df.shape[0];
+    
+    numCols = nCols # number of columns in grid
+    
+    numRows = (number / numCols) + (number % numCols); # number of needed rows in grid 
+    
+    df_subplot = pd.DataFrame(index=df.index,columns=['PlotRow','PlotCol'])
+    
+    for ii in range(df.shape[0]):
+
+        df_subplot.iloc[ii,:] = [ii/4,ii%4]
+        
+    df = df.join(df_subplot)
+    
+    return numRows,numCols, df
+
+def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=""):
+	'''
+
+	'''
+
+
+	# determine layout of grid
+	nR,nC,df_sugars = subPlotSplit(df_sugars,nCols)
+
+	fig,axes = plt.subplots(nR,nC,figsize=[2*nR,nC])
+
+	df = df_od.loc[df_sugars.index]
+
+	# round up window limits to integers
+	ymax = np.ceil(df.max().max())
+	xmax = float(df.columns[-1])
+	xmax_h = int(np.ceil(float(df.columns[-1])/60/60))
+
+	count = 1;
+
+	for idx,row in df_sugars.iterrows():
+	    
+	    rr,cc = row.loc[['PlotRow','PlotCol']].values
+
+	    ax = axes[rr,cc]
+
+	    color_l = (0.0,0.40,0.0,1.00)
+	    color_f = (0.0,0.40,0.0,0.35)
+
+	    ax.plot(df.columns,df.loc[idx,:],color=color_l,lw=1.5)
+	    
+	    ax.fill_between(x=df.columns,y1=[0]*df.shape[1],y2=df.loc[idx,:],color=color_f)
+
+	    ax.set_ylim([0,ymax])
+	    ax.set_xlim([0,xmax])
+
+	    # show tick labels for bottom left subplot only
+	    if (rr==nR-1 and cc==0):
+	        plt.setp(ax,yticks=[0,ymax])
+	        plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+	        
+	        ax.set_xlabel('Time (hours)')
+	        ax.set_ylabel('OD (620 nm)')
+	    else:
+	        plt.setp(ax,yticks=[0,ymax],yticklabels=[])
+	        plt.setp(ax,xticks=[0,xmax],xticklabels=[])
+	        
+	    sub_title = '%02i. %s' % (count,df_sugars.loc[idx,'PM1'])
+	    
+	    plt.text(1.5, 1-float(cc)/nCols, sub_title, fontsize=13,
+	             va='top',ha='left',transform=axes[rr,-1].transAxes)
+
+	    # add well identifier on top left of each subplot
+	    ax.text(1., 1.,'%02i' % count, color=(0,0,0,1.),
+	            horizontalalignment='right', verticalalignment='top', 
+	            transform=ax.transAxes)
+
+	    count+=1;
+	    
+	# turn off axes for remaining unused subplots
+	[axes[rr,col].axis('off') for col in range(cc+1,nCols)];
+
+	ax.text(0.,1.4,title,fontsize=15,transform=axes[0,0].transAxes)
+
+	if savefig:
+
+		if filepath=="":
+
+			filepath = "/Users/firasmidani/Downloads/plotPositivePlateGrowth-%s.pdf" % getFormattedTime()
+	
+		plt.subplots_adjust(right=0.5)
+		plt.savefig(filepath,filetype='pdf')
 
 def readPlateReaderData(filepath,machine):
 	'''
@@ -240,5 +333,4 @@ def summarizeGrowthData(df):
     summary = summary.join(pd.DataFrame(df_fold,columns=['Growth Fold']))
 
     return summary
-
 
