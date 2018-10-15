@@ -294,9 +294,21 @@ def check_bom(data):
 
 	return [encoding for bom, encoding in BOMS if data.startswith(bom)]
 
+def BOM_to_CSV(filepath,newfile,encoding):
+
+	csvReader = csv.reader(codecs.open(filepath, 'rU', encoding))
+
+	fid = open(newfile,'w')
+	for line in csvReader:
+		fid.write('%s\n' % line[0].strip('\t'))  
+	fid.close()
+
+	return
+
 def readPlateReaderData(filepath):
 
-	filename = os.path.basename(filepath);
+	filename, filebase, newfile = breakDownFilePath(filepath)
+
 	content = open(filepath).readlines();
 	sneakPeak = content[0];
 
@@ -304,15 +316,13 @@ def readPlateReaderData(filepath):
 		
 		print '%s is encoded with ASCII' % filename
 
-		return readPlateReaderData_ASCII(filepath)
-
 	elif check_bom(sneakPeak):
 		
 		encoding = check_bom(content[0])[0]
 
-		print '%s is encoded with %s ' % (filename,encoding)
+		BOM_to_CSV(filepath,newfile,encoding[0:6])
 
-		return readPlateReaderData_BOM(filepath,encoding)
+		print '%s is encoded with %s ' % (filename,encoding)
 
 	else:
 
@@ -320,20 +330,7 @@ def readPlateReaderData(filepath):
 
 		return
 
-def breakDownFilePath(filepath):
-
-	filename = os.path.basename(filepath);
-	filebase = "".join(filename.split('.')[:-1]);
-	dirname = os.path.dirname(filepath);
-	newfile = '%s/%s.tsv' % (dirname,filebase);
-
-	return filename, filebase, newfile
-
-def readPlateReaderData_ASCII(filepath):
-
 	interval = 6000 # seconds
-
-	filename, filebase, newfile = breakDownFilePath(filepath)
 
 	skiprows = determineLineSkips(filepath); #print skiprows
 
@@ -348,35 +345,14 @@ def readPlateReaderData_ASCII(filepath):
 
 	return df
 
-def readPlateReaderData_BOM(filepath,encoding):
+def breakDownFilePath(filepath):
 
-	interval = 6000 # seconds
+	filename = os.path.basename(filepath);
+	filebase = "".join(filename.split('.')[:-1]);
+	dirname = os.path.dirname(filepath);
+	newfile = '%s/%s.tsv' % (dirname,filebase);
 
-	filename, filebase, newfile = breakDownFilePath(filepath)
-
-	fid = open(newfile,'w')
-
-	csvReader = csv.reader(codecs.open(filepath, 'rU', 'utf-16'))
-
-	for line in csvReader:
-		fid.write('%s\n' % line[0].strip('\t'))
-           
-	fid.close()
-
-	skiprows = determineLineSkips(newfile); #print skiprows
-
-	df = pd.read_csv(newfile,sep='\t',header=None,index_col=0,skiprows=skiprows)
-
-	# convert column headers to int
-	df.columns = listTimePoints(interval,df.shape[1])
-
-	df.index.name = 'Well'
-	df.T.index.name = 'Time'
-
-	df.to_csv(newfile, sep='\t')
-
-	return df
-
+	return filename, filebase, newfile
 
 def summarizeGrowthData(df):
     '''
