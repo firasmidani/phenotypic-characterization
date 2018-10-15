@@ -25,6 +25,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from codecs import BOM_UTF8, BOM_UTF16_BE, BOM_UTF16_LE, BOM_UTF32_BE, BOM_UTF32_LE
+
+
 # IMPORT PERSONAL LIBRARIES
 
 foo = imp.load_source('biolog_pm_layout','./biolog_pm_layout.py');
@@ -47,11 +50,16 @@ def determineLineSkips(filepath):
 
 	fid = open(filepath,'r');
 
+	header_found = 0;
 	count = 0;
 	for line in fid.readlines():
-	    if line.startswith('Time'):
+	    if line.startswith('A1'):
+	    	header_found=1;
 	        break
 	    count+=1;
+
+	if header_found ==0:
+		count=0;
 	    
 	fid.close()
 
@@ -166,7 +174,7 @@ def subPlotSplit(df,nCols=4):
     
     for ii in range(df.shape[0]):
 
-        df_subplot.iloc[ii,:] = [ii/4,ii%4]
+        df_subplot.iloc[ii,:] = [ii/nCols,ii%nCols]
         
     df = df.join(df_subplot)
     
@@ -175,15 +183,16 @@ def subPlotSplit(df,nCols=4):
 def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=""):
 	'''
 
-	
+
 
 	'''
-
 
 	# determine layout of grid
 	nR,nC,df_sugars = subPlotSplit(df_sugars,nCols)
 
-	fig,axes = plt.subplots(nR,nC,figsize=[2*nR,nC])
+	print df_sugars, [2*nR,nC]
+
+	fig,axes = plt.subplots(nR,nC,figsize=[nC+3,1.5*nR])
 
 	df = df_od.loc[df_sugars.index]
 
@@ -196,9 +205,13 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
 	for idx,row in df_sugars.iterrows():
 	    
-	    rr,cc = row.loc[['PlotRow','PlotCol']].values
+	    rr,cc = row.loc[['PlotRow','PlotCol']].values; print rr,cc
 
-	    ax = axes[rr,cc]
+	    if nC==1:
+	    	ax = axes[rr]
+	    else:
+	    	ax = axes[rr,cc]
+	    print ax
 
 	    color_l = (0.0,0.40,0.0,1.00)
 	    color_f = (0.0,0.40,0.0,0.35)
@@ -223,8 +236,13 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 	        
 	    sub_title = '%02i. %s' % (count,df_sugars.loc[idx,'PM1'])
 	    
+	    if nC==1:
+	    	transform_ax = axes[rr];
+	    else:
+	    	transform_ax = axes[rr,-1];
+
 	    plt.text(1.5, 1-float(cc)/nCols, sub_title, fontsize=13,
-	             va='top',ha='left',transform=axes[rr,-1].transAxes)
+	             va='top',ha='left',transform=transform_ax.transAxes)
 
 	    # add well identifier on top left of each subplot
 	    ax.text(1., 1.,'%02i' % count, color=(0,0,0,1.),
@@ -236,7 +254,12 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 	# turn off axes for remaining unused subplots
 	[axes[rr,col].axis('off') for col in range(cc+1,nCols)];
 
-	ax.text(0.,1.4,title,fontsize=15,transform=axes[0,0].transAxes)
+	if nC==1:
+		transform_ax = axes[0];
+	else:
+		transform_ax = axes[0,0];
+
+	ax.text(0.,1.4,title,fontsize=15,transform=transform_ax.transAxes)
 
 	if savefig:
 
@@ -247,61 +270,113 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 		plt.subplots_adjust(right=0.5)
 		plt.savefig(filepath,filetype='pdf')
 
-def readPlateReaderData(filepath,machine):
-	'''
-    reads raw data from either plate readers in the anaerobic chamber 
+def listTimePoints(interval,numTimePoints):
 
-    Keyword arguments:
-    filepath -- string location of filepath
-    machine -- either 'Ackuskan' or 'Magellan'
+	return np.arange(start=0,stop=interval*numTimePoints,step=interval)
 
-    Returns pandas.DataFrame (well x time)
-	'''
+def isASCII(data):
+    try:
+        data.decode('ASCII')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True
 
-	filename = "".join(os.path.basename(filepath).split('.')[:-1])
-	dirname = os.path.dirname(filepath)	
+def check_bom(data):
 
-	newfile = '%s/%s.tsv' % (dirname,filename)
+	BOMS = (
+    	(BOM_UTF8, "UTF-8"),
+    	(BOM_UTF32_BE, "UTF-32-BE"),
+    	(BOM_UTF32_LE, "UTF-32-LE"),
+    	(BOM_UTF16_BE, "UTF-16-BE"),
+    	(BOM_UTF16_LE, "UTF-16-LE"),
+	)
 
-	if machine=="Ackuskan":
+	return [encoding for bom, encoding in BOMS if data.startswith(bom)]
 
-		skiprows = determineLineSkips(filepath)
+def readPlateReaderData(filepath):
 
-		df = pd.read_csv(filepath,sep='\t',header=0,index_col=0,skiprows=skiprows);
+	filename = os.path.basename(filepath);
+	content = open(filepath).readlines();
+	sneakPeak = content[0];
 
-		# convert column headers to int
-		df.columns = [float(ii) if not isinstance(ii,float) else ii for ii in df.columns ]
+	if isASCII(sneakPeak):
+		
+		print '%s is encoded with ASCII' % filename
 
-		df.index.name = 'Well'
-		df.T.index.name = 'Time'
+		return readPlateReaderData_ASCII(filepath)
 
-		df.to_csv(newfile, sep='\t')
+	elif check_bom(sneakPeak):
+		
+		encoding = check_bom(content[0])[0]
 
-		return df
+		print '%s is encoded with %s ' % (filename,encoding)
 
-	elif machine=="Magellan":
+		return readPlateReaderData_BOM(filepath,encoding)
 
+	else:
 
-		csvReader = csv.reader(codecs.open(filepath, 'rU', 'utf-16'))
+		print 'Parsing Error: Encoding for %s is unknown.'
 
-		fid = open(newfile,'w')
+		return
 
-		for line in csvReader:
-			fid.write('%s\n' % line[0].strip('\t'))
+def breakDownFilePath(filepath):
 
-		fid.close()
+	filename = os.path.basename(filepath);
+	filebase = "".join(filename.split('.')[:-1]);
+	dirname = os.path.dirname(filepath);
+	newfile = '%s/%s.tsv' % (dirname,filebase);
 
-		df = pd.read_csv(newfile,sep='\t',skiprows=1)
+	return filename, filebase, newfile
 
-		# convert column headers to int
-		df.columns = [float(ii[:-1]) if not isinstance(ii,float) else ii for ii in df.columns]
+def readPlateReaderData_ASCII(filepath):
 
-		df.index.name = 'Well'
-		df.T.index.name = 'Time'
+	interval = 6000 # seconds
 
-		df.to_csv(newfile, sep='\t')
+	filename, filebase, newfile = breakDownFilePath(filepath)
 
-		return df
+	skiprows = determineLineSkips(filepath); #print skiprows
+
+	df = pd.read_csv(filepath,sep='\t',header=None,index_col=0,skiprows=skiprows);
+
+	df.columns = listTimePoints(interval,df.shape[1])
+
+	df.index.name = 'Well'
+	df.T.index.name = 'Time'
+
+	df.to_csv(newfile, sep='\t')
+
+	return df
+
+def readPlateReaderData_BOM(filepath,encoding):
+
+	interval = 6000 # seconds
+
+	filename, filebase, newfile = breakDownFilePath(filepath)
+
+	fid = open(newfile,'w')
+
+	csvReader = csv.reader(codecs.open(filepath, 'rU', 'utf-16'))
+
+	for line in csvReader:
+		fid.write('%s\n' % line[0].strip('\t'))
+           
+	fid.close()
+
+	skiprows = determineLineSkips(newfile); #print skiprows
+
+	df = pd.read_csv(newfile,sep='\t',header=None,index_col=0,skiprows=skiprows)
+
+	# convert column headers to int
+	df.columns = listTimePoints(interval,df.shape[1])
+
+	df.index.name = 'Well'
+	df.T.index.name = 'Time'
+
+	df.to_csv(newfile, sep='\t')
+
+	return df
+
 
 def summarizeGrowthData(df):
     '''
