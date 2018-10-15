@@ -35,13 +35,33 @@ from biolog_pm_layout import *
 
 # SET PARAMETERS & STYLES
 #
+#|-- Direcotry Parsing
+#    |-- breakDownFilePath
 #
-#|-- Text Processing
+#|-- Text Parsing
+#    |-- BOM_to_CSV
+#    |-- check_bom
 #    |-- determineLineSkips
+#    |-- isASCII
+#
+#|-- Data Processing
 #    |-- readPlateReaderData
 #
 #|-- Plotting
-#    |-- 
+#    |-- plotPlateGrowth
+#    |-- plotPositivePlateGrowth
+#    |-- subPlotSplit
+#
+#|-- DataFrame Initializing
+#    |-- listTimePoints
+#    |-- parseBiologLayout
+#    |-- parseWellLayout
+#
+#|-- Data Summarizing
+#    |-- summarizeGrowthData
+#
+#|-- Auxiliary
+#    |-- getFormattedtime
 
 
 sns.set_style('whitegrid');
