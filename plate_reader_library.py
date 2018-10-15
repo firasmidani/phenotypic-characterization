@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2018-10-08
-# Final date: 2018-10-08
+# Final date: 2018-10-15
 
 # DESCRIPTION Library of functions for processing plate reader data at the Britton Lab
 
@@ -303,9 +303,9 @@ def BOM_to_CSV(filepath,newfile,encoding):
 		fid.write('%s\n' % line[0].strip('\t'))  
 	fid.close()
 
-	return
+	return newfile
 
-def readPlateReaderData(filepath):
+def readPlateReaderData(filepath,interval=6000):
 
 	filename, filebase, newfile = breakDownFilePath(filepath)
 
@@ -320,7 +320,7 @@ def readPlateReaderData(filepath):
 		
 		encoding = check_bom(content[0])[0]
 
-		BOM_to_CSV(filepath,newfile,encoding[0:6])
+		filepath = BOM_to_CSV(filepath,newfile,encoding[0:6])
 
 		print '%s is encoded with %s ' % (filename,encoding)
 
@@ -329,8 +329,6 @@ def readPlateReaderData(filepath):
 		print 'Parsing Error: Encoding for %s is unknown.'
 
 		return
-
-	interval = 6000 # seconds
 
 	skiprows = determineLineSkips(filepath); #print skiprows
 
