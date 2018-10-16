@@ -2,14 +2,40 @@
 
 # Firas Said Midani
 # Start date: 2018-10-08
-# Final date: 2018-10-15
+# Final date: 2018-10-16
 
 # DESCRIPTION Library of functions for processing plate reader data at the Britton Lab
 
 # TABLE OF CONTENTS
 #
 #
-#|-- Data import
+#|-- Direcotry Parsing
+#    |-- breakDownFilePath
+#
+#|-- Text Parsing
+#    |-- BOM_to_CSV
+#    |-- check_BOM
+#    |-- determineLineSkips
+#    |-- isASCII
+#
+#|-- Data Processing
+#    |-- readPlateReaderData
+#
+#|-- Plotting
+#    |-- plotPlateGrowth
+#    |-- plotPositivePlateGrowth
+#    |-- subPlotSplit
+#
+#|-- DataFrame Initializing
+#    |-- listTimePoints
+#    |-- parseBiologLayout
+#    |-- parseWellLayout
+#
+#|-- Data Summarizing
+#    |-- summarizeGrowthData
+#
+#|-- Auxiliary
+#    |-- getFormattedtime
 
 
 # IMPORT NECESSARY LIBRARIES
@@ -35,36 +61,10 @@ from biolog_pm_layout import *
 
 # SET PARAMETERS & STYLES
 #
-#|-- Direcotry Parsing
-#    |-- breakDownFilePath
-#
-#|-- Text Parsing
-#    |-- BOM_to_CSV
-#    |-- check_bom
-#    |-- determineLineSkips
-#    |-- isASCII
-#
-#|-- Data Processing
-#    |-- readPlateReaderData
-#
-#|-- Plotting
-#    |-- plotPlateGrowth
-#    |-- plotPositivePlateGrowth
-#    |-- subPlotSplit
-#
-#|-- DataFrame Initializing
-#    |-- listTimePoints
-#    |-- parseBiologLayout
-#    |-- parseWellLayout
-#
-#|-- Data Summarizing
-#    |-- summarizeGrowthData
-#
-#|-- Auxiliary
-#    |-- getFormattedtime
-
 
 sns.set_style('whitegrid');
+
+# BEGIN FUNCTIONS
 
 def determineLineSkips(filepath):
 
@@ -302,7 +302,7 @@ def isASCII(data):
     else:
         return True
 
-def check_bom(data):
+def check_BOM(data):
 
 	BOMS = (
     	(BOM_UTF8, "UTF-8"),
@@ -336,9 +336,9 @@ def readPlateReaderData(filepath,interval=6000):
 		
 		print '%s is encoded with ASCII' % filename
 
-	elif check_bom(sneakPeak):
+	elif check_BOM(sneakPeak):
 		
-		encoding = check_bom(content[0])[0]
+		encoding = check_BOM(content[0])[0]
 
 		filepath = BOM_to_CSV(filepath,newfile,encoding[0:6])
 
