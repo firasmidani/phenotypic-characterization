@@ -26,8 +26,10 @@
 #    |-- plotPlateGrowth
 #    |-- plotPositivePlateGrowth
 #    |-- subPlotSplit
+#    |-- summarizeSugarData
 #
 #|-- DataFrame Initializing
+#    |-- findSugarBiolog
 #    |-- listTimePoints
 #    |-- parseBiologLayout
 #    |-- parseWellLayout
@@ -37,6 +39,7 @@
 #
 #|-- Auxiliary
 #    |-- getFormattedtime
+#    |-- nRGB
 
 
 # IMPORT NECESSARY LIBRARIES
