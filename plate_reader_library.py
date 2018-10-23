@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2018-10-08
-# Final date: 2018-10-16	
+# Final date: 2018-10-23	
 
 # DESCRIPTION Library of functions for processing plate reader data at the Britton Lab
 
