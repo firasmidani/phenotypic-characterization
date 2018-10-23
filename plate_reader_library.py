@@ -72,7 +72,7 @@ sns.set_style('whitegrid');
 
 def createFolder(directory):
 	'''
-	creates a folder only if it does not exist
+	Creates a folder only if it does not exist
 
     Keyword arguments:
     directory -- string
@@ -105,6 +105,14 @@ def determineLineSkips(filepath):
 	return count
 
 def findSugarBiolog(sugar):
+	'''
+	Identifies location of well with a particular sugar in Biolog PM plates (1-7)
+
+	Keyword arguments:
+	sugar -- string (must be an exact match with a sugar in biolog_pm_layout.py) 
+
+	Returns an numpy.array of tuples
+	'''
 
     bm = parseBiologLayout();
     hits = bm.where(bm == sugar).dropna(how='all')
@@ -118,7 +126,7 @@ def findSugarBiolog(sugar):
 
 def getFormattedTime():
 	'''
-	returns time stamp formatted as Year-Month-Day-Hour_Minute_Second
+	Constructs time stamp formatted as Year-Month-Day-Hour_Minute_Second
 
 	e.g. '2018-10-10-13-51-12'
 	'''
@@ -130,12 +138,22 @@ def getFormattedTime():
 
 def nRGB(tup):
     '''
-    normalize RGB coordinates to values between 0 and 1
+    Normalize RGB coordinates to values between 0 and 1
+
+    Keyword arguments:
+    tup -- tup with three values, where each value ranges between (and including) 0 and 255
+
+    Returns tuple with three values, where each value ranges between (and including) 0 and 1
     '''
     
     return tuple([float(ii)/255 for ii in tup])
     
 def parseBiologLayout():
+	'''
+	Initializes a pandas.DataFrame that maps the location (well and plate number) of each sugar in Biolog PM plates
+
+	Returns pandas.DataFrame
+	'''
 
 	biolog_layout = pd.DataFrame([Carbon1,Carbon2,PhosphorusAndSulfur,PeptideNitrogen1,
                                  PeptideNitrogen2,PeptideNitrogen3],
@@ -145,6 +163,12 @@ def parseBiologLayout():
 	return biolog_layout
 
 def parseWellLayout():
+	'''
+	Initializes a pandas.DataFrame where indices are well identifiers (e.g. C8)
+	and columns indicate row number and column number
+
+	Returns pandas.DataFrame
+	'''
 
 	legend_row = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8}
 
@@ -338,10 +362,23 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 	return fig,axes
 
 def listTimePoints(interval,numTimePoints):
+	'''
+	Constructs a numpy.array of a time series based on time interval length and number of time points
+
+	Keyword arguments:
+	interval -- int or float (latter perferred)
+	numTimePoints -- int
+
+	Returns numpy.array
+	'''
 
 	return np.arange(start=0,stop=interval*numTimePoints,step=interval)
 
 def isASCII(data):
+	'''
+	Reference https://unicodebook.readthedocs.io/guess_encoding.html
+	'''
+
     try:
         data.decode('ASCII')
     except UnicodeDecodeError:
@@ -350,6 +387,13 @@ def isASCII(data):
         return True
 
 def check_BOM(data):
+	'''
+	If a string starts with a BOM marker, return marker if it corresponds to one of several UTF encoding types. 
+
+	Returns list of strings
+
+	Reference https://unicodebook.readthedocs.io/guess_encoding.html
+	'''
 
 	BOMS = (
     	(BOM_UTF8, "UTF-8"),
@@ -362,6 +406,16 @@ def check_BOM(data):
 	return [encoding for bom, encoding in BOMS if data.startswith(bom)]
 
 def BOM_to_CSV(filepath,newfile,encoding):
+	'''
+	For text files marked with BOM, convert to CSV format.
+
+    Keyword arguments:
+    filepath -- string
+    newfile -- new filename (string)
+    encoding -- string of encoding (e.g. 'utf-8')
+
+    Returns newfile (stirng)
+    '''
 
 	csvReader = csv.reader(codecs.open(filepath, 'rU', encoding))
 
@@ -411,6 +465,15 @@ def readPlateReaderData(filepath,interval=600):
 	return df
 
 def breakDownFilePath(filepath):
+	'''
+	Breaks down a file path into several components (e.g. /Users/firasmidani/RandomFileName.asc)
+	* filename (basename without path) --> RandomFileName.asc 
+	* filebase (basename without path and extension) --> RandomFileName
+	* newfile (filename with extension replaced to .tsv) --> /Users/firasmidani/RandomFileName.tsv)
+
+	Returns list of three strings
+	'''
+
 
 	filename = os.path.basename(filepath);
 	filebase = "".join(filename.split('.')[:-1]);
@@ -421,7 +484,7 @@ def breakDownFilePath(filepath):
 
 def summarizeGrowthData(df):
     '''
-    summarizes the locationa and growth statistics for each well in a plate 
+    summarizes the location and growth statistics for each well in a plate 
 
     Keyword arguments:
     df -- pandas.DataFrame (well x time)
