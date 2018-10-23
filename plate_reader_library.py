@@ -11,7 +11,7 @@
 #
 #|-- Direcotry Parsing
 #    |-- breakDownFilePath
-#	 |-- createFolder
+#    |-- createFolder
 #
 #|-- Text Parsing
 #    |-- BOM_to_CSV
