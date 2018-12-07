@@ -588,7 +588,6 @@ def summarizeSugarData(df_dict,sub_plate_df,sugar,nCols=5,title="",savefig=0,fil
                 ax.set_xlabel('Time (hours)',fontsize=12,fontweight='bold')
                 ax.set_ylabel('OD (620 nm)',fontsize=12,fontweight='bold')
 
-
             ax.set_title(row.name,fontsize=15,fontweight='bold',color=df_sub_plot.loc['GroupColor'])
 
             [ii.set(fontsize=12,fontweight='bold') for ii in ax.get_xticklabels()+ax.get_yticklabels()]
