@@ -50,6 +50,7 @@ import imp
 import sys
 import time
 import codecs
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -60,7 +61,8 @@ from codecs import BOM_UTF8, BOM_UTF16_BE, BOM_UTF16_LE, BOM_UTF32_BE, BOM_UTF32
 
 # IMPORT PERSONAL LIBRARIES
 
-foo = imp.load_source('biolog_pm_layout','./biolog_pm_layout.py');
+libpath = os.path.dirname(os.path.realpath(__file__)) # get script's directory
+foo = imp.load_source('biolog_pm_layout','%s/biolog_pm_layout.py' % libpath);
 from biolog_pm_layout import *
 
 # SET PARAMETERS & STYLES
@@ -114,15 +116,15 @@ def findSugarBiolog(sugar):
 	Returns an numpy.array of tuples
 	'''
 
-    bm = parseBiologLayout();
-    hits = bm.where(bm == sugar).dropna(how='all')
-    hits = hits.dropna(axis=1,how='all').T
+	bm = parseBiologLayout();
+	hits = bm.where(bm == sugar).dropna(how='all')
+	hits = hits.dropna(axis=1,how='all').T
 
-    hits_list = []
-    for idx, row in hits.iterrows():
-        hits_list.append((idx[-1],(row==sugar).idxmax()))
-        
-    return hits_list
+	hits_list = []
+	for idx, row in hits.iterrows():
+		hits_list.append((idx[-1],(row==sugar).idxmax()))
+
+	return hits_list
 
 def getFormattedTime():
 	'''
@@ -200,6 +202,9 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 	    if summary.loc[idx,'Growth Fold']>threshold:
 	        color_l = (0.0,0.40,0.0,1.00)
 	        color_f = (0.0,0.40,0.0,0.35)
+	    elif summary.loc[idx,'Growth Fold']<0.75:
+	    	color_l = (1.0,0.0,0.0,1.00)
+	    	color_f = (1.0,0.0,0.0,0.35)
 	    else:
 	        color_l = (0.,0.,0.,1.00)
 	        color_f = (0.,0.,0.,0.15)
@@ -379,12 +384,12 @@ def isASCII(data):
 	Reference https://unicodebook.readthedocs.io/guess_encoding.html
 	'''
 
-    try:
-        data.decode('ASCII')
-    except UnicodeDecodeError:
-        return False
-    else:
-        return True
+	try:
+	    data.decode('ASCII')
+	except UnicodeDecodeError:
+	    return False
+	else:
+	    return True
 
 def check_BOM(data):
 	'''
@@ -515,28 +520,43 @@ def summarizeGrowthData(df):
 
     return summary
 
-def summarizeSugarData(df_dict,sub_plate_list,nCols=4,title=sugar,savefig=0,filepath=""):
+def summarizeSugarData(df_dict,sub_plate_df,sugar,nCols=5,title="",savefig=0,filepath=""):
 
-    nR, nC, df_plot = subPlotSplit(sub_plate_list,nCols=nCols);
-    print nR, nC, df_plot
+    # find well location of sugar
+    plate, well = findSugarBiolog(sugar)[0]; 
 
+    # initialize parameters for figure panels
+    #nR, nC, df_plot = subPlotSplit(sub_plate_df,nCols=nCols);
+    nR = sub_plate_df.PlotRow.max()+1; 
+    nC = sub_plate_df.PlotCol.max()+1; 
+    df_plot = sub_plate_df;
+
+    # columns for df_Plot are Plates, PlotRow, PlotCol, index is isolate ID
+    #print nR, nC, df_plot
+
+    # initialize multi-panel figure 
     fig,axes = plt.subplots(nR,nC,figsize=[nC+3,2.5*nR],sharey=True)   
 
+    # initialize global x-axis and y-axis window limits
     g_xmax,g_ymax = 0,0;
 
+    # loop through isolates
     for idx,row in df_plot.iterrows():
 
+    	# extract info on location and data locations
         df_sub_plot = row;
         rr,cc = df_sub_plot.loc[['PlotRow','PlotCol']]; #print rr, cc
-        #plates = row.drop(['PlotRow','PlotCol']).values; #print plates
         plates = df_sub_plot.loc['Plates'];
         
+        # initialize local y-axis window limit
         max_od = 0;
 
+        # loop through each replicate/plate
         for plate in plates:
 
             ax = axes[rr,cc]; #print plate
 
+            # 
             od_ctrl = summarizeGrowthData(df_dict[plate]).loc['A1','Max OD']
             od_case = summarizeGrowthData(df_dict[plate]).loc[well,'Max OD']
             od_ratio = float(od_case)/od_ctrl        
@@ -568,7 +588,8 @@ def summarizeSugarData(df_dict,sub_plate_list,nCols=4,title=sugar,savefig=0,file
                 ax.set_xlabel('Time (hours)',fontsize=12,fontweight='bold')
                 ax.set_ylabel('OD (620 nm)',fontsize=12,fontweight='bold')
 
-            ax.set_title(row.name,fontsize=15,fontweight='bold')
+
+            ax.set_title(row.name,fontsize=15,fontweight='bold',color=df_sub_plot.loc['GroupColor'])
 
             [ii.set(fontsize=12,fontweight='bold') for ii in ax.get_xticklabels()+ax.get_yticklabels()]
 
@@ -593,10 +614,18 @@ def summarizeSugarData(df_dict,sub_plate_list,nCols=4,title=sugar,savefig=0,file
         plt.setp(ax,yticks=[0,g_ymax])
         plt.setp(ax,xticks=[0,g_xmax],xticklabels=[0,xmax_h])
 
-    l_row,l_col = df_plot.loc[idx,['PlotRow','PlotCol']].values
-    [axes[l_row,col].axis('off') for col in range(l_col+1,nCols)];
+    #l_row,l_col = df_plot.loc[idx,['PlotRow','PlotCol']].values
+    #[axes[l_row,col].axis('off') for col in range(l_col+1,nCols)];
 
-    plt.suptitle(title,fontsize=20)
+	to_plot = list(zip(df_plot.PlotRow, df_plot.PlotCol));
+	to_kill = list(set(itertools.product(range(nR),range(nC))).difference(to_plot));
+
+	[axes[kill_row,kill_col].axis('off') for kill_row,kill_col in to_kill]
+
+    if title=="":
+    	plt.suptitle(sugar,fontsize=20)
+    else:
+    	plt.suptitle(title,fontsize=20)
 
     plt.subplots_adjust(hspace=0.5,wspace=0.2)
 
