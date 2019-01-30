@@ -23,6 +23,7 @@
 #    |-- readPlateReaderData
 #
 #|-- Plotting
+#    |-- definePlotLayout
 #    |-- plotGroupedGrowth
 #    |-- plotPlateGrowth
 #    |-- plotPositivePlateGrowth
