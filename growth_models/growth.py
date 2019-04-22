@@ -121,47 +121,25 @@ class GrowthPlate(object):
     #enddef 
         
     def smoothData(self,window=19,polyorder=3):
-    
-        data = self.data;
         
-        ### skip first column: time should not be smoothed 
-        data = data.apply(lambda x: savgol_filter(x,window,polyorder), axis=0)
-        
-        self.data = data;
-        #return None
-    
+        self.data = self.data.apply(lambda x: savgol_filter(x,window,polyorder), axis=0)
+            
     def subtractBaseline(self):
-        
-        data = self.data;
+                        
+        self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
                 
-        data = data.apply(lambda x: x-data.iloc[0,:],axis=1)
-    
-        self.data = data
-        
-        #return None
-    
     def subtractControl(self):
-        
-        data = self.data;
-        
-        data = data.apply(lambda x: x-data.loc[:,self.control],axis=0)
-    
-        self.data = data
-    
+                
+        self.data = self.data.apply(lambda x: x-self.data.loc[:,self.control],axis=0)
+     
     def convertTimeUnits(self):
-        '''
-        
+        '''        
         converts seconds to hours
         
         '''
-        time = self.time;
         
-        time = time.astype(float)/3600        
-        
-        self.time = time;
-        
-        #return self.time
-        
+        self.time = self.time.astype(float)/3600        
+                        
     def extractGrowthData(self,arg_dict={}):
         '''
         NOTE: argument is framed as a dictionary to allow for non-biolog formats of plates but could simply be substrate
@@ -182,15 +160,11 @@ class GrowthPlate(object):
 
                 arg_dict[dict_key] = [value];
 
-        key = self.key;
-        data = self.data;
-        time = self.time
-        
-        sub_key = key[key.isin(arg_dict).sum(1)==len(arg_dict)];
+        sub_key = self.key[self.key.isin(arg_dict).sum(1)==len(arg_dict)];
         sub_key_idx = sub_key.index;
         
-        sub_data = data.loc[:,sub_key_idx];
-        sub_time = time;
+        sub_data = self.data.loc[:,sub_key_idx];
+        sub_time = self.time;
                         
         return GrowthData(sub_time,sub_data,sub_key)
         
