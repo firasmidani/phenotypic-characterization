@@ -30,7 +30,7 @@ except ImportError:
 
 
 def logistic(x, A, u, d, v, y0):
-    """Logistic growth model.
+    """Logistic growth modelself.
 
     Proposed in Zwietering et al., 1990 (PMID: 16348228)
     """

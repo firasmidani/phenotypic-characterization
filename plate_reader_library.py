@@ -724,7 +724,7 @@ def smoothGrowthCurves(data,window,polyorder):
 		raise ValueError('data should be either a pandas.DataFrame or list')
 
 
-def summarizeGrowthData(df,smooth=0,smooth_args=(19,3)):
+def summarizeGrowthData(df,smooth=1,smooth_args=(19,3)):
     '''
     summarizes the location and growth statistics for each well in a plate 
 
@@ -735,7 +735,7 @@ def summarizeGrowthData(df,smooth=0,smooth_args=(19,3)):
     '''
 
     # initialize dataframe
-    legend = pd.DataFrame(index=df.index,columns=['Row','Col','Let'])
+    legend = pd.DataFrame(index=df.index,columns=['Row','Column','Letter'])
     
     # map row letters to numbers
     legend_row = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8}

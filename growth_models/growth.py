@@ -160,6 +160,7 @@ class GrowthPlate(object):
 
                 arg_dict[dict_key] = [value];
 
+
         sub_key = self.key[self.key.isin(arg_dict).sum(1)==len(arg_dict)];
         sub_key_idx = sub_key.index;
         
@@ -205,7 +206,7 @@ class GrowthData(object):
         ax.set_xlabel('Time',fontsize=20);
         ax.set_ylabel('Optical Density',fontsize=20);
         
-        ax.set_title(self.key.substrate[0],fontsize=20);
+        ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax
     
@@ -218,7 +219,8 @@ class GrowthMetrics(object):
         self.time = growth.time.copy();
         self.data = growth.data.copy();
         self.key = growth.key.copy();
-        
+        self.model = str(model)
+
     def Classical(self,model=None):
         
         if model==None:
@@ -228,17 +230,23 @@ class GrowthMetrics(object):
         x = np.ravel(self.time.values);
         y = np.ravel(self.data.values);
         
-        params, pcov = fit(model,x,y)
+        try:
+        	params, pcov = fit(model,x,y)
         
-        self.model = (model);
-        self.params = params;
+      		self.model = model;
+        	self.params = params;
+        except:
+        	self.model = model;
+        	self.params = [np.nan,np.nan,np.nan]
         
     def inferClassicalDynamics(self):
         
-        self.key['r'] = self.params[1]
-        self.key['K'] = self.params[0]
-        self.key['d'] = self.params[2]
-        self.key['AUC'] = self.inferClassical_AUC();
+    	model = 'classical'
+
+        self.key['%s_r' % model] = self.params[1]
+        self.key['%s_K' % model] = self.params[0]
+        self.key['%s_d' % model] = self.params[2]
+        self.key['%s_AUC' % model] = self.inferClassical_AUC();
         
     def inferClassical_AUC(self):
 
@@ -324,15 +332,15 @@ class GrowthMetrics(object):
     
     def inferGPDynamics(self):
         
-        print self.inferGP_r()
-        print self.inferGP_K()
-        print self.inferGP_AUC()
+        #print self.inferGP_r()
+        #print self.inferGP_K()
+        #print self.inferGP_AUC()
         #print self.inferGP_d()
         
-        self.key['r'] = self.inferGP_r()[0]
-        self.key['K'] = self.inferGP_K()[0]
-        #self.key['d'] = self.inferGP_d()[0]
-        self.key['AUC'] = self.inferGP_AUC()[0]
+        self.key['GP_r'] = self.inferGP_r()[0]
+        self.key['GP_K'] = self.inferGP_K()[0]
+        #self.key['GP_d'] = self.inferGP_d()[0]
+        self.key['GP_AUC'] = self.inferGP_AUC()[0]
             
     def GP(self):
                 
@@ -343,7 +351,7 @@ class GrowthMetrics(object):
 
         m = GPy.models.GPRegression(x,y,k)
         m.optimize()
-        print m
+        #print m
         
         self.model = m;
         #self.params = params;
@@ -377,6 +385,6 @@ class GrowthMetrics(object):
         ax.set_xlabel('Time',fontsize=20);
         ax.set_ylabel('Optical Density',fontsize=20);
         
-        ax.set_title(self.key.substrate[0],fontsize=20);
+        ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax    
