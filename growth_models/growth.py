@@ -6,7 +6,6 @@
 
 # DESCRIPTION Framework for processing plate reader data at the Britton Laboratory (BCM) and inferring growth dynamics. 
 
-
 # CLASS GrowthPlate
 #     | — init
 #         | — key
@@ -46,6 +45,7 @@
 #
 # DEF gpDerivative(x,gp)
 
+# IMPORT NECESSARY LIBRARIES
 
 import pandas as pd
 import numpy as np
@@ -53,6 +53,8 @@ import GPy
 
 import scipy.signal.savgol_filter as savgol_filter
 import scipy.stats as stats
+
+# BEGIN FRAMEWORK
 
 class GrowthPlate(object):
     
