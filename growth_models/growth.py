@@ -7,43 +7,47 @@
 # DESCRIPTION Framework for processing plate reader data at the Britton Laboratory (BCM) and inferring growth dynamics. 
 
 # CLASS GrowthPlate
-#     | — init
-#         | — key
-#         | — control
-#         | — data
-#         | — time
-#     | — smoothData
-#     | — subtractControl
-#     | — subtractBaseline
-#     | — convertTimeUnits
-#     | — extractGrowthData
+#     | -- init
+#         | -- key
+#         | -- control
+#         | -- data
+#         | -- time
+#     | -- smoothData
+#     | -- subtractControl
+#     | -- subtractBaseline
+#     | -- convertTimeUnits
+#     | -- extractGrowthData
 
 # CLASS GrowthData
-#     | — init
-#         | — key
-#         | — data
-#         | — time 
-#     | — plot
+#     | -- init
+#         | -- key
+#         | -- data
+#         | -- time 
+#     | -- plot
 
 # CLASS GrowthMetrics
-#     | — init
-#         | — key
-#         | — data
-#         | — time
-#     | — Classical
-#     | — inferClassicalDynamics
-#     | — inferClassicalAUC
-#     | — inferGP_r
-#     | — inferGP_d (In Progress)
-#     | — inferGP_K
-#     | — inferGP_AUC
-#     | — inferGPDynamics
-#     | — GP
-#     | — predictClassical
-#     | — predictGP
-#     | — plot
+#     | -- init
+#         | -- key
+#         | -- data
+#         | -- time
+#     | -- Classical
+#     | -- inferClassicalDynamics
+#     | -- inferClassicalAUC
+#     | -- inferGP_r
+#     | -- inferGP_d (In Progress)
+#     | -- inferGP_K
+#     | -- inferGP_AUC
+#     | -- inferGPDynamics
+#     | -- GP
+#     | -- predictClassical
+#     | -- predictGP
+#     | -- plot
 #
 # DEF gpDerivative(x,gp)
+
+# ACKNOWELDGMENTS
+
+# Parts of this framework include code snippets are inspired from work by Peter Tonner (github.com/ptonner/gp_growth_phenotype/)
 
 # NOTES ON STRUCTURE OF THIS FRAMEWORK
 
@@ -53,12 +57,35 @@
 
 # IMPORT NECESSARY LIBRARIES
 
+import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import numpy as np
 import GPy
+import imp
+import os
 
-import scipy.signal.savgol_filter as savgol_filter
+from scipy.signal import savgol_filter
 import scipy.stats as stats
+
+# IMPORT IN-HOUSE LIBRARIES
+
+lib_path = '/Users/firasmidani/Downloads/phenotypic-characterization/growth_fitting_library.py'
+
+foo = imp.load_source('growth_fitting_library',lib_path);
+
+from growth_fitting_library import fit, gompertz, logistic
+
+# UTILITY FUNCTIONS 
+
+def gpDerivative(x,gp):
+
+    # from Solak et al. <-- from Tonner et al. (github.com/ptonner/gp_growth_phenotype/)
+    mu,_ = gp.predictive_gradients(x);
+    _,cov = gp.predict(x,full_cov=True);
+    mult = [[((1./gp.kern.lengthscale)*(1-(1./gp.kern.lengthscale)*(y-z)**2))[0] for y in x] for z in x];
+    
+    return mu,mult*cov   
 
 # BEGIN FRAMEWORK
 
@@ -144,7 +171,7 @@ class GrowthPlate(object):
         # make sure variable selections are not empty
         if not bool(arg_dict):
 
-            print("Error: Seletion of variables must be defined by a dictionary.")
+            print("Error: Selection of variables must be defined by a dictionary.")
             
             return None
         
@@ -204,13 +231,11 @@ class GrowthData(object):
         ax.set_xlabel('Time',fontsize=20);
         ax.set_ylabel('Optical Density',fontsize=20);
         
-        ax.set_title(growth.key.substrate[0],fontsize=20);
+        ax.set_title(self.key.substrate[0],fontsize=20);
        
         return fig,ax
     
-    
-from growth_fitting_library import *
-
+   
 class GrowthMetrics(object):
     
     def __init__(self,growth=None,model=None,params=None,pred=None):
@@ -328,11 +353,11 @@ class GrowthMetrics(object):
         print self.inferGP_r()
         print self.inferGP_K()
         print self.inferGP_AUC()
-        print self.inferGP_d()
+        #print self.inferGP_d()
         
         self.key['r'] = self.inferGP_r()[0]
         self.key['K'] = self.inferGP_K()[0]
-        self.key['d'] = self.inferGP_d()[0]
+        #self.key['d'] = self.inferGP_d()[0]
         self.key['AUC'] = self.inferGP_AUC()[0]
             
     def GP(self):
@@ -378,15 +403,6 @@ class GrowthMetrics(object):
         ax.set_xlabel('Time',fontsize=20);
         ax.set_ylabel('Optical Density',fontsize=20);
         
-        ax.set_title(growth.key.substrate[0],fontsize=20);
+        ax.set_title(self.key.substrate[0],fontsize=20);
        
         return fig,ax    
-    
-def gpDerivative(x,gp):
-
-    # from Solak et al. <-- from Tonner et al. (github.com/ptonner/gp_growth_phenotype/)
-    mu,_ = gp.predictive_gradients(x);
-    _,cov = gp.predict(x,full_cov=True);
-    mult = [[((1./gp.kern.lengthscale)*(1-(1./gp.kern.lengthscale)*(y-z)**2))[0] for y in x] for z in x];
-    
-    return mu,mult*cov   
