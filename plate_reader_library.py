@@ -24,6 +24,7 @@
 #
 #|-- Plotting
 #    |-- definePlotLayout
+#    |-- modifyTickLabels
 #    |-- plotGroupedGrowth
 #    |-- plotPlateGrowth
 #    |-- plotPositivePlateGrowth
@@ -74,6 +75,23 @@ sns.set_style('whitegrid');
 
 
 # BEGIN FUNCTIONS
+
+def modifyTickLabels(axis,fontsize=15,fontweight='normal',which='both'):
+
+	if which=='both':
+
+		[ii.set(fontsize=fontsize,fontweight=fontweight) for ii in ax.get_xticklabels()+ax.get_yticklabels()];
+
+	elif which=='x':
+
+		[ii.set(fontsize=fontsize,fontweight=fontweight) for ii in ax.get_xticklabels()];
+
+	elif which=='y':
+
+		[ii.set(fontsize=fontsize,fontweight=fontweight) for ii in ax.get_yticklabels()];
+
+	return axis
+
 
 def BOM_to_CSV(filepath,newfile,encoding):
 	'''
