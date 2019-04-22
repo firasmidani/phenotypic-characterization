@@ -45,6 +45,12 @@
 #
 # DEF gpDerivative(x,gp)
 
+# NOTES ON STRUCTURE OF THIS FRAMEWORK
+
+# Why is GrowthMetrics a class? By making GrowthMetrics a separate class from GrowthData, you can avoid unintential mutability of raw grwoth data. You can also make different GrowthMetrics objects for the same GrowthData (e.g. both gompertz and logistical) and still maintain the parent GrowthData in its unmodified form. 
+
+# Why does the library not include funtions for input/output of data? This framework is motivated by analysis of microbial cultures grown on Biolog Phenotypic Characterizaiton PM1 and PM2 plates (with pre-determined layout of substrates). Still, this framework needs to be applicable for non-Biolog based analyses. By de-coupling input/output of data and dat analysis, I can enable easier modularity of code. 
+
 # IMPORT NECESSARY LIBRARIES
 
 import pandas as pd
@@ -378,7 +384,7 @@ class GrowthMetrics(object):
     
 def gpDerivative(x,gp):
 
-    # from Solak et al. <-- from Peter et al. 
+    # from Solak et al. <-- from Tonner et al. (github.com/ptonner/gp_growth_phenotype/)
     mu,_ = gp.predictive_gradients(x);
     _,cov = gp.predict(x,full_cov=True);
     mult = [[((1./gp.kern.lengthscale)*(1-(1./gp.kern.lengthscale)*(y-z)**2))[0] for y in x] for z in x];
