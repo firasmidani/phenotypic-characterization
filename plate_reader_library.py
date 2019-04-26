@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2018-10-08
-# Final date: 2019-01-30
+# Final date: 2019-04-26
 
 # DESCRIPTION Library of functions for processing plate reader data at the Britton Lab
 
@@ -679,7 +679,7 @@ def populatePlateKey(plate):
     key = key.set_index(['Well'])
     
     return key
-    
+
 def subPlotSplit(df,nCols=4):
     ''' 
     With a limit of four columns in a sub-plot grid
