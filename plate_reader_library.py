@@ -18,6 +18,7 @@
 #    |-- check_BOM
 #    |-- determineLineSkips
 #    |-- isASCII
+#    |-- parsePlateName
 #
 #|-- Data Processing
 #    |-- readPlateReaderData
@@ -36,6 +37,7 @@
 #    |-- listTimePoints
 #    |-- parseBiologLayout
 #    |-- parseWellLayout
+#	 |-- populatePlateKey
 #
 #|-- Data Summarizing
 #    |-- summarizeGrowthData
@@ -313,6 +315,13 @@ def parseBiologLayout():
 
 	return biolog_layout
 
+def parsePlateName(plate):
+    
+    isolate = str(plate.split('_')[0]);
+    pm = str(plate.split('PM')[1][0]);
+    
+    return isolate,pm
+
 def parseWellLayout():
 	'''
 	Initializes a pandas.DataFrame where indices are well identifiers (e.g. C8)
@@ -327,7 +336,7 @@ def parseWellLayout():
 	cols_list = range(1,13)*8;
 
 	df = pd.DataFrame([(xx,yy,'%s%s' % (xx,yy)) for xx,yy in zip(rows_list,cols_list)],
-	                       columns=['Row','Col','Well'])
+	                       columns=['Row','Column','Well'])
 	df = df.set_index('Well')
 	
 	return df
@@ -487,7 +496,7 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 
 	for idx in df.index:
 	    
-	    r,c = summary.loc[idx,['Row','Col']].values-1;
+	    r,c = summary.loc[idx,['Row','Column']].values-1;
 
 	    ax = axes[r,c]
 	    
@@ -646,6 +655,31 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
 	return fig,axes
 
+def populatePlateKey(plate):
+    
+    isolate,pm = parsePlateName(plate);
+    
+    pm = 'PM%s' % pm
+    
+    biolog = parseBiologLayout().loc[:,pm];
+    
+    wells = biolog.index;
+    
+    substrate = biolog.values;
+    
+    isolate = [isolate]*len(substrate);
+    
+    plate = [plate]*len(substrate);
+    
+    key = pd.DataFrame([wells,isolate,substrate,plate],
+                      index=['Well','Isolate','Substrate','Plate']);
+    
+    key = key.T
+
+    key = key.set_index(['Well'])
+    
+    return key
+    
 def subPlotSplit(df,nCols=4):
     ''' 
     With a limit of four columns in a sub-plot grid
