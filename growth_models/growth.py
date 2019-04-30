@@ -2,7 +2,7 @@
 
 # Author: Firas Midani
 # Date Initial: 2019-04-22
-# Date Last Modified: 2019-04-22
+# Date Last Modified: 2019-04-30
 
 # DESCRIPTION Framework for processing plate reader data at the Britton Laboratory (BCM) and inferring growth dynamics. 
 
@@ -54,6 +54,11 @@
 # Why is GrowthMetrics a class? By making GrowthMetrics a separate class from GrowthData, you can avoid unintential mutability of raw grwoth data. You can also make different GrowthMetrics objects for the same GrowthData (e.g. both gompertz and logistical) and still maintain the parent GrowthData in its unmodified form. 
 
 # Why does the library not include funtions for input/output of data? This framework is motivated by analysis of microbial cultures grown on Biolog Phenotypic Characterizaiton PM1 and PM2 plates (with pre-determined layout of substrates). Still, this framework needs to be applicable for non-Biolog based analyses. By de-coupling input/output of data and dat analysis, I can enable easier modularity of code. 
+
+# TO DO
+
+# 1. key for objects should store whether modificiations (e.g. subtractControl or smoothData) were applied to object
+
 
 # IMPORT NECESSARY LIBRARIES
 
