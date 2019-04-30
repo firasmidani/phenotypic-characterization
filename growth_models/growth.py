@@ -252,6 +252,7 @@ class GrowthMetrics(object):
         self.key['%s_K' % model] = self.params[0]
         self.key['%s_d' % model] = self.params[2]
         self.key['%s_AUC' % model] = self.inferClassical_AUC();
+        self.key['%s_td'] = self.inferDoublingRate(mtype=model);
         
     def inferClassical_AUC(self):
 
@@ -296,6 +297,17 @@ class GrowthMetrics(object):
         var = np.dot(D,np.dot(cov,D));
         
         return mu,var
+
+    def inferDoublingRate(self,mtype='classical'):
+        '''
+        assumes growth rate is per hour
+        '''
+
+        r = self.key['%s_r' % mtype]
+
+        r = (np.log10(2)/r)*60;
+
+        return r;
     
     def inferGP_d(self,threshold=.95):
         
@@ -346,6 +358,7 @@ class GrowthMetrics(object):
         self.key['GP_K'] = self.inferGP_K()[0]
         #self.key['GP_d'] = self.inferGP_d()[0]
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
+        self.key['GP_td'] = self.inferDoublingRate(mtype='GP');
             
     def GP(self):
                 
