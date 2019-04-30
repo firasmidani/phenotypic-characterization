@@ -253,7 +253,7 @@ class GrowthMetrics(object):
         self.key['%s_K' % model] = self.params[0]
         self.key['%s_d' % model] = self.params[2]
         self.key['%s_AUC' % model] = self.inferClassical_AUC();
-        self.key['%s_td'] = self.inferDoublingRate(mtype=model);
+        self.key['%s_td' % model] = self.inferDoublingRate(mtype=model);
         
     def inferClassical_AUC(self):
 
@@ -271,7 +271,7 @@ class GrowthMetrics(object):
 
         r = (np.log10(2)/r)*60;
 
-        return r;
+        return r
 
     def inferGP_r(self):
         
