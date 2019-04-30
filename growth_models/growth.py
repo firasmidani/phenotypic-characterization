@@ -33,6 +33,7 @@
 #     | -- Classical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
+#     | -- inferDoublingRate
 #     | -- inferGP_r
 #     | -- inferGP_d (In Progress)
 #     | -- inferGP_K
@@ -261,6 +262,17 @@ class GrowthMetrics(object):
         
         return np.trapz(y,x)
 
+    def inferDoublingRate(self,mtype='classical'):
+        '''
+        assumes growth rate is per hour
+        '''
+
+        r = self.key['%s_r' % mtype]
+
+        r = (np.log10(2)/r)*60;
+
+        return r;
+
     def inferGP_r(self):
         
         x = self.time.values
@@ -297,17 +309,6 @@ class GrowthMetrics(object):
         var = np.dot(D,np.dot(cov,D));
         
         return mu,var
-
-    def inferDoublingRate(self,mtype='classical'):
-        '''
-        assumes growth rate is per hour
-        '''
-
-        r = self.key['%s_r' % mtype]
-
-        r = (np.log10(2)/r)*60;
-
-        return r;
     
     def inferGP_d(self,threshold=.95):
         
