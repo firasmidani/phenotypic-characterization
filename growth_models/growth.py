@@ -265,11 +265,16 @@ class GrowthMetrics(object):
     def inferDoublingRate(self,mtype='classical'):
         '''
         assumes growth rate is per hour
+
+        # reaffirmed by Swain et al. 2016. Nature Comm.
+        #  The doubling time is ln(2) times the inverse of the growth rate. 
+
         '''
 
         r = self.key['%s_r' % mtype]
 
-        r = (np.log10(2)/r)*60;
+        #r = (np.log10(2)/r)*60; 
+        r = (np.log(2)/r)*60; 
 
         return r
 
