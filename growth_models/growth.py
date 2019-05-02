@@ -33,7 +33,7 @@
 #     | -- Classical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
-#     | -- inferDoublingRate
+#     | -- inferDoublingTime
 #     | -- inferGP_r
 #     | -- inferGP_d (In Progress)
 #     | -- inferGP_K
@@ -119,7 +119,12 @@ class GrowthPlate(object):
         self.control = control;
         self.data = data.iloc[:,1:];
         self.time = pd.DataFrame(data.iloc[:,0]);
-        
+        self.input_time = self.time.copy()
+        self.input_data = self.data.copy()
+
+        self.mods = pd.DataFrame(columns=['smoothed','floored','controlled','logged'],index=['status']);
+        self.mods = self.mods.apply(lambda x: False);
+
         assert type(key) == pd.DataFrame, "key must be a pandas dataframe"
         assert data.columns[0]=='Time', "first data column must be Time"
         assert (data.shape[1]-1) == (key.shape[0]), "key must contain metadata for each sample"
@@ -129,15 +134,18 @@ class GrowthPlate(object):
     def smoothData(self,window=19,polyorder=3):
         
         self.data = self.data.apply(lambda x: savgol_filter(x,window,polyorder), axis=0)
-            
+        self.mods.smoothed = True
+
     def subtractBaseline(self):
                         
         self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
-                
+        self.mods.floored = True
+
     def subtractControl(self):
                 
         self.data = self.data.apply(lambda x: x-self.data.loc[:,self.control],axis=0)
-     
+        self.mods.controlled = True
+
     def convertTimeUnits(self):
         '''        
         converts seconds to hours
@@ -179,7 +187,7 @@ class GrowthPlate(object):
 
 class GrowthData(object):
     
-    def __init__(self,time=None,data=None,key=None):
+    def __init__(self,time=None,data=None,key=None,mods=None):
         
         '''
         Data structure for handling growth data for a single sample
@@ -193,8 +201,18 @@ class GrowthData(object):
         
         self.time = time.copy();
         self.data = data.copy();
+
+        self.time = time.copy();
+        self.data = data.copy();
+
         self.key = key.copy();
-        
+
+        if mods is None:
+
+            self.mods = pd.DataFrame(columns=['smoothed','floored','controlled','logged'],index=['status']);
+            self.mods = self.mods.apply(lambda x: False);
+
+
         assert type(time) == pd.DataFrame, "time must be a pandas dataframe"
         assert type(data) == pd.DataFrame, "data must be a pandas dataframe"
         assert type(key) == pd.DataFrame, "key must be a pandas dataframe"
@@ -215,6 +233,14 @@ class GrowthData(object):
         ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax
+
+    def log(self):
+        '''
+        natural logarithm transform 
+        '''
+        self.data = self.data.apply(lambda x: np.log(x+1e-3))
+        self.mods.logged = True
+
     
    
 class GrowthMetrics(object):
@@ -253,7 +279,7 @@ class GrowthMetrics(object):
         self.key['%s_K' % model] = self.params[0]
         self.key['%s_d' % model] = self.params[2]
         self.key['%s_AUC' % model] = self.inferClassical_AUC();
-        self.key['%s_td' % model] = self.inferDoublingRate(mtype=model);
+        self.key['%s_td' % model] = self.inferDoublingTime(mtype=model);
         
     def inferClassical_AUC(self):
 
@@ -262,19 +288,19 @@ class GrowthMetrics(object):
         
         return np.trapz(y,x)
 
-    def inferDoublingRate(self,mtype='classical'):
+    def inferDoublingTime(self,mtype='classical'):
         '''
         assumes growth rate is per hour
 
         # reaffirmed by Swain et al. 2016. Nature Comm.
         #  The doubling time is ln(2) times the inverse of the growth rate. 
-
+`
         '''
 
         r = self.key['%s_r' % mtype]
 
         #r = (np.log10(2)/r)*60; 
-        r = (np.log(2)/r)*60; 
+        r = (np.log(2)/r)*60; # doubling time in minutes
 
         return r
 
@@ -364,7 +390,7 @@ class GrowthMetrics(object):
         self.key['GP_K'] = self.inferGP_K()[0]
         #self.key['GP_d'] = self.inferGP_d()[0]
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
-        self.key['GP_td'] = self.inferDoublingRate(mtype='GP');
+        self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
             
     def GP(self):
                 
