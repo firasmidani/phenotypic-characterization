@@ -222,6 +222,7 @@ class GrowthData(object):
         time (pd.DataFrame): n by 1 DataFrame (for n timepoints) that stores time.
         data (pd.DataFrame): n by 1 DataFrame (for n timepoints) that stores the raw optical density data.
         key (pd.DataFrame): 1 by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
+        mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
         '''
         
         self.time = time.copy();
@@ -271,17 +272,42 @@ class GrowthData(object):
     
    
 class GrowthMetrics(object):
-    
-    def __init__(self,growth=None,model=None,params=None,pred=None):
+         '''
+        Data structure for summarizing bacterial growth curves
         
+        Attributes:
         
+        data (pd.DataFrame): n by 1 DataFrame (for n time points) for optical density data
+        time (pd.DataFrame): n by 1 DataFrame (for n time points) for time points
+        key (pd.DataFrame): p by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
+                             The index column is assumed to be well position (e.g. A1)
+        model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
+        mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
+        '''   
+    def __init__(self,growth=None,model=None,params=None,pred=None,mod=None):
+         '''
+        Data structure for summarizing bacterial growth curves
+        
+        Attributes:
+        
+        data (pd.DataFrame): n by 1 DataFrame (for n time points) for optical density data
+        time (pd.DataFrame): n by 1 DataFrame (for n time points) for time points
+        key (pd.DataFrame): p by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
+                             The index column is assumed to be well position (e.g. A1)
+        model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
+        mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
+        pred (pd.DataFrame)
+        params
+        '''  
+
         self.time = growth.time.copy();
         self.data = growth.data.copy();
         self.key = growth.key.copy();
-        self.model = str(model)
+        self.model = model
 
     def Classical(self,model=None):
-        
+         '''Fits OD to a classical model of bacterial growth'''
+       
         if model==None:
             print("User must define choice of classical model from logistic, gompertz, or richards")
             pass
@@ -299,6 +325,7 @@ class GrowthMetrics(object):
         	self.params = [np.nan,np.nan,np.nan]
         
     def inferClassicalDynamics(self):
+        '''Infers then stores growth parameters (r,K,d,AUC,td) in key'''
         
     	model = 'classical'
 
@@ -309,6 +336,7 @@ class GrowthMetrics(object):
         self.key['%s_td' % model] = self.inferDoublingTime(mtype=model);
         
     def inferClassical_AUC(self):
+        '''Infers area under the curve using classical approach'''
 
         x = np.ravel(self.time);
         y = np.ravel(self.data);
@@ -332,6 +360,7 @@ class GrowthMetrics(object):
         return r
 
     def inferGP_r(self):
+        '''Infers growth rate with GP regression'''
         
         x = self.time.values
         gp = self.model;        
@@ -343,7 +372,7 @@ class GrowthMetrics(object):
         return mu[ind,0,0][0],np.diag(cov)[ind][0],ind
     
     def inferGP_K(self):
-    
+        '''Infers carrying capacity with GP regression'''
         x = self.time.values
         gp = self.model; 
         
@@ -353,7 +382,7 @@ class GrowthMetrics(object):
         return mu[ind,0][0],np.diag(cov)[ind][0],ind
     
     def inferGP_AUC(self):
-        
+        '''Infers area under the curve with GP regression'''
         x = self.time.values
         gp = self.model; 
         
@@ -407,7 +436,7 @@ class GrowthMetrics(object):
         return x[ind]
     
     def inferGPDynamics(self):
-        
+        '''Infers then stores growth parameters (r,K,AUC,td) in key'''
         #print self.inferGP_r()
         #print self.inferGP_K()
         #print self.inferGP_AUC()
@@ -420,7 +449,7 @@ class GrowthMetrics(object):
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
             
     def GP(self):
-                
+        '''Fit a Gaussian Process Regression model'''
         x = self.time; 
         y = self.data.values
         
@@ -434,6 +463,7 @@ class GrowthMetrics(object):
         #self.params = params;
         
     def predictClasscial(self):
+        '''Predict OD using classical model'''
         
         x = np.ravel(self.time.values);
 
@@ -442,12 +472,13 @@ class GrowthMetrics(object):
         self.pred = [gompertz(xx,*self.params) for xx in x];
     
     def predictGP(self):
-        
+        '''Predict OD using GP regression'''
         x = self.time.values;
         
         #K,r,d,v,y0 = self.params
         
-        self.pred = self.model.predict(x)[0]
+        #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
+        self.pred = gompertz.predict(x)[0]
         
                 
     def plot(self):
