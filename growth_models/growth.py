@@ -97,7 +97,7 @@ def gpDerivative(x,gp):
 
 class GrowthPlate(object):
     
-    def __init__(self,data=None,key=None,control='A1'):
+    def __init__(self,data=None,key=None,time=None,mods=None,control='A1',):
         
         '''
         Data structure for handling growth data for a microtiter plate (biolog)
@@ -110,15 +110,22 @@ class GrowthPlate(object):
         key (pd.DataFrame): p by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
                              The index column is assumed to be well position (e.g. A1)
         control (str): position of control well in the plate. 
-
+        mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
+        time (pd.DataFrame): n by 1 DataFrame (for n timepoints) that stores the raw time points
         '''
         
         data = data.copy().sort_values(['Time'],ascending=True);
 
         self.key = key.copy();
         self.control = control;
-        self.data = data.iloc[:,1:];
-        self.time = pd.DataFrame(data.iloc[:,0]);
+
+        if time is None:
+            self.data = data.iloc[:,1:];
+            self.time = pd.DataFrame(data.iloc[:,0]);
+        else:
+            self.data = data.copy()
+            self.time = time.copy();
+
         self.input_time = self.time.copy()
         self.input_data = self.data.copy()
 
@@ -132,29 +139,31 @@ class GrowthPlate(object):
     #enddef 
 
     def logData(self):
+        '''Transform with a natural logarithm all data points'''
 
         self.data = self.data.apply(lambda x: np.log(x))
         self.mods.logged = True
         
     def smoothData(self,window=19,polyorder=3):
-        
+        '''Smooth each array (column) with a Savitzky-Golay filter'''
+
         self.data = self.data.apply(lambda x: savgol_filter(x,window,polyorder), axis=0)
         self.mods.smoothed = True
 
     def subtractBaseline(self):
-                        
+        '''Subtract first value in each array (column) from all elements of the array'''
+
         self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
         self.mods.floored = True
 
     def subtractControl(self):
-                
+        '''Subtract array (column) belonging to control well from all wells'''
+
         self.data = self.data.apply(lambda x: x-self.data.loc[:,self.control],axis=0)
         self.mods.controlled = True
 
     def convertTimeUnits(self):
-        '''        
-        converts seconds to hours
-        
+        '''Convert time array (column) from units of seconds to hours
         '''
         
         self.time = self.time.astype(float)/3600        
