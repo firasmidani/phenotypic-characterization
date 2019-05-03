@@ -12,11 +12,12 @@
 #         | -- control
 #         | -- data
 #         | -- time
+#     | -- convertTimeUnits
+#     | -- extractGrowthData
+#     | -- plot
 #     | -- smoothData
 #     | -- subtractControl
 #     | -- subtractBaseline
-#     | -- convertTimeUnits
-#     | -- extractGrowthData
 
 # CLASS GrowthData
 #     | -- init
@@ -272,18 +273,7 @@ class GrowthData(object):
     
    
 class GrowthMetrics(object):
-         '''
-        Data structure for summarizing bacterial growth curves
-        
-        Attributes:
-        
-        data (pd.DataFrame): n by 1 DataFrame (for n time points) for optical density data
-        time (pd.DataFrame): n by 1 DataFrame (for n time points) for time points
-        key (pd.DataFrame): p by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
-                             The index column is assumed to be well position (e.g. A1)
-        model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
-        mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
-        '''   
+  
     def __init__(self,growth=None,model=None,params=None,pred=None,mod=None):
          '''
         Data structure for summarizing bacterial growth curves
@@ -296,8 +286,9 @@ class GrowthMetrics(object):
                              The index column is assumed to be well position (e.g. A1)
         model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
         mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
-        pred (pd.DataFrame)
-        params
+        pred (pd.DataFrame): n by 1 DataFrame (for n time points) for model predicted optical density data
+        params (np.array): array of floats for parameters inferred by classical model fitting (K,r,d,v,y0)
+            where K is carrying capacity, r is growth rate, d is lag itme, v is a shape parameter, and y0 is intiial 
         '''  
 
         self.time = growth.time.copy();
