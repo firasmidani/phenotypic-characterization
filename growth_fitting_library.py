@@ -19,6 +19,7 @@ get_area           Calculate the area under the PM curve.
 """
 
 import numpy as np
+import pandas as pd
 
 try:
     from scipy.optimize.minpack import curve_fit
@@ -131,18 +132,55 @@ def fit(function, x, y):
     """Fit the provided function to the x and y values.
 
     The function parameters and the parameters covariance.
+    
+    NOTE: curve_fit is very sensitive to initial parameters. for growth curves, ini_u is key
+          modify so that you try multiple initial guess until you find the best fit --> see optimize_initial_u()
     """
+
     # Compute guesses for the parameters
     # This is necessary to get significant fits
 
     ini_u = 1e-4 # biopython default of 4 leads to the wrong minimal optima (I use 1e-4 sometimes)
     ini_v = 0.1; # neither gompertz or logisitc use this parameters, so meh
 
-    p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
+    p0 = [guess_plateau(x, y), optimize_initial_u(function,x,y), guess_lag(x, y), ini_v, min(y)]
+    #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
+    #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
+
+    #print p0
 
     params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
     return params, pcov
 
+def optimize_initial_u(function,x,y):
+
+    ini_u_list = [1e-3,1e-2,1e-1,1e0,1e1,1e2];
+    sse_list = [];
+
+    ini_v = 0.1;
+
+    for ini_u in ini_u_list:
+
+        p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
+        params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
+        y_true = y;
+        y_pred = [function(xx,*params) for xx in x];
+        sse_list.append(SumSquaredError(y_true,y_pred));
+
+    print zip(ini_u_list,sse_list)
+    ind = np.where(sse_list==np.min(sse_list))[0];
+    ini_u = ini_u_list[ind];
+
+    return ini_u
+
+def SumSquaredError(y_true,y_pred):
+    
+    df = pd.DataFrame([y_true,y_pred])
+    e = df.diff()
+    se = e.apply(lambda x: x**2)
+    sse = np.sqrt(se.sum(1).sum(0))
+
+    return sse
 
 def get_area(y, x):
     """Get the area under the curve."""

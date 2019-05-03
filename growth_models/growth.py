@@ -202,8 +202,8 @@ class GrowthData(object):
         self.time = time.copy();
         self.data = data.copy();
 
-        self.time = time.copy();
-        self.data = data.copy();
+        self.input_time = time.copy();
+        self.input_data = data.copy();
 
         self.key = key.copy();
 
@@ -240,7 +240,6 @@ class GrowthData(object):
         '''
         self.data = self.data.apply(lambda x: np.log(x+1e-3))
         self.mods.logged = True
-
     
    
 class GrowthMetrics(object):
