@@ -77,13 +77,15 @@ import scipy.stats as stats
 
 # IMPORT IN-HOUSE LIBRARIES
 
-lib_path = '/Users/firasmidani/Downloads/phenotypic-characterization/growth_fitting_library.py'
+lib_path_1 = '/Users/firasmidani/Downloads/phenotypic-characterization/growth_fitting_library.py'
+lib_path_2 = '/Users/firasmidani/Downloads/phenotypic-characterization/plate_reader_library.py'
 
-foo = imp.load_source('growth_fitting_library',lib_path);
-foo = imp.load_source('plate_reader_library',lib_path);
+foo_1 = imp.load_source('growth_fitting_library',lib_path_1);
+foo_2 = imp.load_source('plate_reader_library',lib_path_2);
 
 from growth_fitting_library import fit, gompertz, logistic
 from plate_reader_library import plotPlateGrowth
+
 # UTILITY FUNCTIONS 
 
 def gpDerivative(x,gp):
@@ -153,7 +155,10 @@ class GrowthPlate(object):
         self.mods.smoothed = True
 
     def subtractBaseline(self):
-        '''Subtract first value in each array (column) from all elements of the array'''
+        '''Subtract first value in each array (column) from all elements of the array
+
+        NOTE: if performed after logging, this is equivalent to scaling relative to OD at T0!
+        '''
 
         self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
         self.mods.floored = True
@@ -274,8 +279,8 @@ class GrowthData(object):
    
 class GrowthMetrics(object):
   
-    def __init__(self,growth=None,model=None,params=None,pred=None,mod=None):
-         '''
+    def __init__(self,growth=None,classical_model=None,gp_model=None,params=None,pred=None,mod=None):
+        '''
         Data structure for summarizing bacterial growth curves
         
         Attributes:
@@ -284,7 +289,8 @@ class GrowthMetrics(object):
         time (pd.DataFrame): n by 1 DataFrame (for n time points) for time points
         key (pd.DataFrame): p by k DataFrame (for k experimental variables) that stores experimental variables for each well. 
                              The index column is assumed to be well position (e.g. A1)
-        model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
+        classical_model (function): classical growth model function (logistic, gompertz, or richards), see growth_fitting_library.py
+        gp_model (?)
         mods (pd.DataFrame): 4 by 1 DataFrame that stores the status of transformation or modifications of the object data set. 
         pred (pd.DataFrame): n by 1 DataFrame (for n time points) for model predicted optical density data
         params (np.array): array of floats for parameters inferred by classical model fitting (K,r,d,v,y0)
@@ -294,12 +300,12 @@ class GrowthMetrics(object):
         self.time = growth.time.copy();
         self.data = growth.data.copy();
         self.key = growth.key.copy();
-        self.model = model
+        self.classical_model = classical_model;
 
-    def Classical(self,model=None):
-         '''Fits OD to a classical model of bacterial growth'''
+    def Classical(self,classical_model=None):
+        '''Fits OD to a classical model of bacterial growth'''
        
-        if model==None:
+        if classical_model==None:
             print("User must define choice of classical model from logistic, gompertz, or richards")
             pass
             
@@ -307,12 +313,12 @@ class GrowthMetrics(object):
         y = np.ravel(self.data.values);
         
         try:
-        	params, pcov = fit(model,x,y)
+        	params, pcov = fit(classical_model,x,y)
         
-      		self.model = model;
+      		self.classical_model = classical_model;
         	self.params = params;
         except:
-        	self.model = model;
+        	self.classical_model = classical_model;
         	self.params = [np.nan,np.nan,np.nan]
         
     def inferClassicalDynamics(self):
@@ -340,7 +346,6 @@ class GrowthMetrics(object):
 
         # reaffirmed by Swain et al. 2016. Nature Comm.
         #  The doubling time is ln(2) times the inverse of the growth rate. 
-`
         '''
 
         r = self.key['%s_r' % mtype]
@@ -354,7 +359,7 @@ class GrowthMetrics(object):
         '''Infers growth rate with GP regression'''
         
         x = self.time.values
-        gp = self.model;        
+        gp = self.gp_model;        
         
         mu,cov = gpDerivative(x,gp)
         
@@ -365,9 +370,9 @@ class GrowthMetrics(object):
     def inferGP_K(self):
         '''Infers carrying capacity with GP regression'''
         x = self.time.values
-        gp = self.model; 
+        gp = self.gp_model; 
         
-        mu,cov = self.model.predict(x,full_cov=True);
+        mu,cov = self.gp_model.predict(x,full_cov=True);
         ind = np.where(mu==mu.max())[0];
 
         return mu[ind,0][0],np.diag(cov)[ind][0],ind
@@ -375,7 +380,7 @@ class GrowthMetrics(object):
     def inferGP_AUC(self):
         '''Infers area under the curve with GP regression'''
         x = self.time.values
-        gp = self.model; 
+        gp = self.gp_model; 
         
         mu,cov = gp.predict(x,full_cov=True);
         ind = np.where(mu==mu.max())[0];
@@ -389,9 +394,11 @@ class GrowthMetrics(object):
         return mu,var
     
     def inferGP_d(self,threshold=.95):
-        
+        '''
+        does not work yet - 2019.05.03 
+        '''
         x = self.time.values
-        gp = self.model; 
+        gp = self.gp_model; 
         
         mu,var = gpDerivative(x,gp);
         #mu,cov = gp.predict(x,full_cov=True)
@@ -450,10 +457,10 @@ class GrowthMetrics(object):
         m.optimize()
         #print m
         
-        self.model = m;
+        self.gp_model = m;
         #self.params = params;
         
-    def predictClasscial(self):
+    def predictClassical(self):
         '''Predict OD using classical model'''
         
         x = np.ravel(self.time.values);
@@ -469,7 +476,7 @@ class GrowthMetrics(object):
         #K,r,d,v,y0 = self.params
         
         #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
-        self.pred = gompertz.predict(x)[0]
+        self.pred = self.gp_model.predict(x)[0]
         
                 
     def plot(self):
