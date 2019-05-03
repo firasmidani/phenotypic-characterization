@@ -130,6 +130,11 @@ class GrowthPlate(object):
         assert (data.shape[1]-1) == (key.shape[0]), "key must contain metadata for each sample"
         
     #enddef 
+
+    def logData(self):
+
+        self.data = self.data.apply(lambda x: np.log(x))
+        self.mods.logged = True
         
     def smoothData(self,window=19,polyorder=3):
         
@@ -180,8 +185,10 @@ class GrowthPlate(object):
         
         sub_data = self.data.loc[:,sub_key_idx];
         sub_time = self.time;
+
+        sub_mods = self.mods
                         
-        return GrowthData(sub_time,sub_data,sub_key)
+        return GrowthData(sub_time,sub_data,sub_key,sub_mods)
         
     #enddef
 
@@ -208,10 +215,10 @@ class GrowthData(object):
         self.key = key.copy();
 
         if mods is None:
-
             self.mods = pd.DataFrame(columns=['smoothed','floored','controlled','logged'],index=['status']);
             self.mods = self.mods.apply(lambda x: False);
-
+        else:
+            self.mods = mods
 
         assert type(time) == pd.DataFrame, "time must be a pandas dataframe"
         assert type(data) == pd.DataFrame, "data must be a pandas dataframe"
@@ -228,8 +235,11 @@ class GrowthData(object):
         [ii.set(fontsize=20) for ii in ax.get_xticklabels()+ax.get_yticklabels()];
         
         ax.set_xlabel('Time',fontsize=20);
-        ax.set_ylabel('Optical Density',fontsize=20);
-        
+
+        if self.mods.logged:
+            ax.set_ylabel('log(OD)',fontsize=20);
+        else:
+            ax.set_ylabel('Optical Density',fontsize=20);
         ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax
@@ -408,7 +418,7 @@ class GrowthMetrics(object):
     def predictClasscial(self):
         
         x = np.ravel(self.time.values);
-        
+
         #K,r,d,v,y0 = self.params
         
         self.pred = [gompertz(xx,*self.params) for xx in x];
