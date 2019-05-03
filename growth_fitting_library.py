@@ -2,6 +2,9 @@
 # This code is part of the Biopython distribution and governed by its
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
+
+# MODIFIFED BY FIRAS MIDANI ON 05-03-2019
+
 """Growth curves fitting and parameters extraction for phenotype data.
 
 This module provides functions to perform sigmoid functions fitting to
@@ -147,13 +150,12 @@ def fit(function, x, y):
     #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
     #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
 
-    #print p0
-
     params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
     return params, pcov
 
 def optimize_initial_u(function,x,y):
-
+    '''Try pre-determined initial guess of u (i.e. growth rate) and return the one that results in lowest SSE
+    '''
     ini_u_list = [1e-3,1e-2,1e-1,1e0,1e1,1e2];
     sse_list = [];
 
@@ -167,13 +169,15 @@ def optimize_initial_u(function,x,y):
         y_pred = [function(xx,*params) for xx in x];
         sse_list.append(SumSquaredError(y_true,y_pred));
 
-    print zip(ini_u_list,sse_list)
     ind = np.where(sse_list==np.min(sse_list))[0];
     ini_u = ini_u_list[ind];
 
     return ini_u
 
 def SumSquaredError(y_true,y_pred):
+    '''Returns sum of squared erros
+
+    '''
     
     df = pd.DataFrame([y_true,y_pred])
     e = df.diff()
