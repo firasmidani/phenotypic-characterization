@@ -79,9 +79,10 @@ import scipy.stats as stats
 lib_path = '/Users/firasmidani/Downloads/phenotypic-characterization/growth_fitting_library.py'
 
 foo = imp.load_source('growth_fitting_library',lib_path);
+foo = imp.load_source('plate_reader_library',lib_path);
 
 from growth_fitting_library import fit, gompertz, logistic
-
+from plate_reader_library import plotPlateGrowth
 # UTILITY FUNCTIONS 
 
 def gpDerivative(x,gp):
@@ -198,7 +199,90 @@ class GrowthPlate(object):
         sub_mods = self.mods
                         
         return GrowthData(sub_time,sub_data,sub_key,sub_mods)
-        
+
+    def plot(self):
+
+        df = self.data.copy().T;
+        df.columns = np.ravel(self.time.copy().values);
+        summary = self.key;
+
+        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="");
+
+        return fig,axes
+
+    # def plot(self,threshold=1.5):
+
+    #     fig,axes = plt.subplots(8,12,figsize=[12,8])
+
+    #     # subtract T0 from other time points in each well
+    #     df = self.data.copy();
+
+    #     # round up window limits to integers
+    #     ymax = np.ceil(df.max().max()); 
+    #     xmax = float(df.index[-1])
+    #     xmax_h = int(np.ceil(float(df.index[-1])/60/60))
+
+    #     for idx in df.keys():
+            
+    #         r,c = self.key.loc[idx,['Row','Column']].values-1;
+
+    #         ax = axes[r,c]
+            
+    #         if 'Growth Fold' in self.key.columns:
+    #             # green if above threshoold, gray if below
+    #             if self.key.loc[idx,'Growth Fold']>threshold:
+    #                 color_l = (0.0,0.00,1.0,1.00) # blue
+    #                 color_f = (0.0,0.00,1.0,0.15)
+    #             elif self.key.loc[idx,'Growth Fold']<0.50:
+    #                 color_l = (1.0,0.0,0.0,1.00) # red
+    #                 color_f = (1.0,0.0,0.0,0.15)
+    #             else:
+    #                 color_l = (0.,0.,0.,1.00) # black
+    #                 color_f = (0.,0.,0.,0.15)
+    #         else:
+    #                 color_l = (0.,0.,0.,1.00) # black
+    #                 color_f = (0.,0.,0.,0.15)
+ 
+    #         ax.set_ylim([0,ymax])
+    #         ax.set_xlim([0,xmax])
+
+    #         x = df.index;
+    #         y = df.loc[:,idx];
+
+    #         ax.plot(x,y,color=color_l,lw=1.5)
+            
+    #         ax.fill_between(x=x,y1=[0]*df.shape[1],y2=y,color=color_f)
+
+    #         # show tick labels for bottom left subplot only
+    #         if (r==7 and c==0):
+    #             plt.setp(ax,yticks=[0,ymax])
+    #             plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+    #         else:
+    #             plt.setp(ax,yticks=[0,ymax],yticklabels=[])
+    #             plt.setp(ax,xticks=[0,xmax],xticklabels=[])
+            
+    #         # add well identifier on top left of each subplot
+    #         well_color = (0.65,0.165,0.165,0.8);#(0,0,1,0.5)
+    #         ax.text(0., 1., idx, color=well_color,
+    #                 horizontalalignment='left', verticalalignment='top', 
+    #                 transform=ax.transAxes)
+
+    #         ax.text(1., 1., "%0.2f" % summary.loc[idx,'Max OD'], color='black',
+    #                 horizontalalignment='right', verticalalignment='top', 
+    #                 transform=ax.transAxes)
+            
+    #     fig.text(0.515, 0.07, 'Time (hours)', fontsize=15, 
+    #              ha='center', va='bottom', 
+    #              transform=ax.transAxes)
+    #     fig.text(0.1, 0.5, 'Optical Density (620 nm)', fontsize=15, 
+    #              va='center', ha='right', rotation='vertical',
+    #              transform=ax.transAxes)
+
+    #     fig.suptitle(title,fontsize=15)
+
+
+    #     return fig,axes
+
     #enddef
 
 class GrowthData(object):
