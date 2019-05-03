@@ -758,7 +758,7 @@ def smoothGrowthCurves(data,window,polyorder):
 		raise ValueError('data should be either a pandas.DataFrame or list')
 
 
-def summarizeGrowthData(df,smooth=1,smooth_args=(19,3)):
+def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3)):
     '''
     summarizes the location and growth statistics for each well in a plate 
 
@@ -775,7 +775,8 @@ def summarizeGrowthData(df,smooth=1,smooth_args=(19,3)):
     legend_row = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8}
 
     # subtract T0 from other time points in each well
-    df = df.apply(lambda col: col - df.loc[:,0], axis=0)
+    if subtract:
+    	df = df.apply(lambda col: col - df.loc[:,0], axis=0)
 
     if smooth:
     	df = smoothGrowthCurves(df,smooth_args[0],smooth_args[1])

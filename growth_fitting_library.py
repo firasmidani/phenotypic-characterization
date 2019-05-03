@@ -150,6 +150,8 @@ def fit(function, x, y):
     #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
     #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
 
+    #print p0
+
     params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
     return params, pcov
 
@@ -162,12 +164,16 @@ def optimize_initial_u(function,x,y):
     ini_v = 0.1;
 
     for ini_u in ini_u_list:
-
+        
         p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
-        params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
-        y_true = y;
-        y_pred = [function(xx,*params) for xx in x];
-        sse_list.append(SumSquaredError(y_true,y_pred));
+        
+        try: 
+            params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
+            y_true = y;
+            y_pred = [function(xx,*params) for xx in x];
+            sse_list.append(SumSquaredError(y_true,y_pred));
+        except:
+            sse_list.append(np.inf)
 
     ind = np.where(sse_list==np.min(sse_list))[0];
     ini_u = ini_u_list[ind];

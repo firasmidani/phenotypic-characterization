@@ -14,6 +14,7 @@
 #         | -- time
 #     | -- convertTimeUnits
 #     | -- extractGrowthData
+#     | -- logData
 #     | -- plot
 #     | -- smoothData
 #     | -- subtractControl
@@ -319,7 +320,7 @@ class GrowthMetrics(object):
         	self.params = params;
         except:
         	self.classical_model = classical_model;
-        	self.params = [np.nan,np.nan,np.nan]
+        	self.params = [np.nan,np.nan,np.nan,0.1,y[0]]
         
     def inferClassicalDynamics(self):
         '''Infers then stores growth parameters (r,K,d,AUC,td) in key'''
