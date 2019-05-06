@@ -67,9 +67,13 @@ from scipy.signal import savgol_filter
 
 # IMPORT PERSONAL LIBRARIES
 
-libpath = os.path.dirname(os.path.realpath(__file__)) # get script's directory
-foo = imp.load_source('biolog_pm_layout','%s/biolog_pm_layout.py' % libpath);
-from biolog_pm_layout import *
+sys.path.append('..')
+
+from config.biolog_pm_layout import *
+
+#libpath = os.path.dirname(os.path.realpath(__file__)) # get script's directory
+#foo = imp.load_source('biolog_pm_layout','%s/biolog_pm_layout.py' % libpath);
+#from biolog_pm_layout import *
 
 # SET PARAMETERS & STYLES
 
