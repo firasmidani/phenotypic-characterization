@@ -22,6 +22,7 @@
 #
 #|-- Data Processing
 #    |-- readPlateReaderData
+#    |-- smoothGrowthCurves
 #
 #|-- Plotting
 #    |-- definePlotLayout
@@ -46,7 +47,6 @@
 #    |-- getFormattedtime
 #    |-- nRGB
 
-
 # IMPORT NECESSARY LIBRARIES
 
 import os
@@ -69,11 +69,7 @@ from scipy.signal import savgol_filter
 
 sys.path.append('..')
 
-from config.biolog_pm_layout import *
-
-#libpath = os.path.dirname(os.path.realpath(__file__)) # get script's directory
-#foo = imp.load_source('biolog_pm_layout','%s/biolog_pm_layout.py' % libpath);
-#from biolog_pm_layout import *
+from config import biolog_pm_layout as bpl 
 
 # SET PARAMETERS & STYLES
 
@@ -312,8 +308,8 @@ def parseBiologLayout():
 	Returns pandas.DataFrame
 	'''
 
-	biolog_layout = pd.DataFrame([Carbon1,Carbon2,PhosphorusAndSulfur,PeptideNitrogen1,
-                                 PeptideNitrogen2,PeptideNitrogen3],
+	biolog_layout = pd.DataFrame([bpl.Carbon1,bpl.Carbon2,bpl.PhosphorusAndSulfur,
+								  bpl.PeptideNitrogen1,bpl.PeptideNitrogen2,bpl.PeptideNitrogen3],
                                  index=['PM1','PM2','PM3','PM4','PM5','PM^'],
                                  columns=parseWellLayout().index).T
 
