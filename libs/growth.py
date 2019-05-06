@@ -88,6 +88,13 @@ from plates import plotPlateGrowth
 
 def gpDerivative(x,gp):
 
+    if isinstance(x,pd.DataFrame):
+        x = x.values[:,np.newaxis]
+    elif isinstance(x,list):
+        x = np.array(x)[:,np.newaxis];
+    elif isinstance(x,np.ndarray) & (x.ndim ==1):
+        x = x[:,np.newaxis];
+
     # from Solak et al. <-- from Tonner et al. (github.com/ptonner/gp_growth_phenotype/)
     mu,_ = gp.predictive_gradients(x);
     _,cov = gp.predict(x,full_cov=True);
@@ -440,7 +447,7 @@ class GrowthMetrics(object):
         
         self.key['GP_r'] = self.inferGP_r()[0]
         self.key['GP_K'] = self.inferGP_K()[0]
-        #self.key['GP_d'] = self.inferGP_d()[0]
+        self.key['GP_d'] = self.inferGP_d()[0]
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
             
@@ -458,14 +465,17 @@ class GrowthMetrics(object):
         self.gp_model = m;
         #self.params = params;
         
-    def predictClassical(self):
+    def predictClassical(self,classical_model=gompertz):
         '''Predict OD using classical model'''
         
         x = np.ravel(self.time.values);
 
         #K,r,d,v,y0 = self.params
         
-        self.pred = [gompertz(xx,*self.params) for xx in x];
+        #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
+        self.pred = [classical_model(xx,*self.params) for xx in x];
+        self.key['classical_max'] = np.max(self.pred)
+
     
     def predictGP(self):
         '''Predict OD using GP regression'''
@@ -473,9 +483,9 @@ class GrowthMetrics(object):
         
         #K,r,d,v,y0 = self.params
         
-        #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
-        self.pred = self.gp_model.predict(x)[0]
-        
+        self.pred = np.ravel(self.gp_model.predict(x)[0])
+        self.key['GP_max'] = np.max(self.pred)
+       
                 
     def plot(self):
         

@@ -67,8 +67,15 @@ def fit(function, x, y):
     # often, y0 is estimated to be really low while is estimated to be really high, 
     #        visual fit is good but parameter fit is awful, 
     #        so here we are bounding the parameter estimate
-    p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)],
-                 [np.inf,np.inf,np.inf,np.inf,np.inf]);
+
+    y_delta = np.abs(max(y)-min(y));
+
+    p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)-1*y_delta],
+                 [np.inf,np.inf,np.inf,np.inf,min(y)+1*y_delta]);
+
+    # # should lag time be minimally bounded by zero 
+    # p0_bounds = ([-np.inf,-np.inf,0.,-np.inf,-np.inf],
+    #              [np.inf,np.inf,np.inf,np.inf,np.inf]);
 
     params, pcov = curve_fit(function, x, y, p0=p0,bounds=p0_bounds,maxfev=10000,check_finite=True)
 
