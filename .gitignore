@@ -6,7 +6,6 @@
 # gitignore/Python.gitignore
 *.py[cod]
 
-
 # gitignore/community/Python/JupyterNotebooks.gitignore
 #
 .ipynb_checkpoints
