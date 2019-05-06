@@ -150,8 +150,6 @@ def fit(function, x, y):
     #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
     #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
 
-    #print p0
-
     params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
     return params, pcov
 
