@@ -325,7 +325,7 @@ class GrowthMetrics(object):
     	model = 'classical'
 
         self.key['%s_r' % model] = self.params[1]
-        self.key['%s_K' % model] = self.params[0]+self.params[4] #A-y0 so assumes that y0 is zero ?
+        self.key['%s_K' % model] = self.params[0]#+self.params[4] #A-y0 so assumes that y0 is zero ?
         self.key['%s_d' % model] = self.params[2]
         self.key['%s_AUC' % model] = self.inferClassical_AUC();
         self.key['%s_td' % model] = self.inferDoublingTime(mtype=model);

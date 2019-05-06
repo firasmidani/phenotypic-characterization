@@ -150,7 +150,13 @@ def fit(function, x, y):
     #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
     #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
 
-    params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
+    # often, y0 is estimated to be really low while is estimated to be really high, 
+    #        visual fit is good but parameter fit is awful
+    p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)],
+                 [np.inf,np.inf,np.inf,np.inf,np.inf]);
+
+    params, pcov = curve_fit(function, x, y, p0=p0,bounds=p0_bounds,maxfev=10000,check_finite=True)
+    
     return params, pcov
 
 def optimize_initial_u(function,x,y):
@@ -164,7 +170,7 @@ def optimize_initial_u(function,x,y):
     for ini_u in ini_u_list:
         
         p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
-        
+
         try: 
             params, pcov = curve_fit(function, x, y, p0=p0,maxfev=10000)
             y_true = y;
