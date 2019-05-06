@@ -3,7 +3,7 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
 
-# MODIFIFED BY FIRAS MIDANI ON 05-03-2019
+# MODIFIFED BY FIRAS MIDANI ON 05-06-2019
 
 """Growth curves fitting and parameters extraction for phenotype data.
 
@@ -21,6 +21,20 @@ fit                Sigmoid functions fit.
 get_area           Calculate the area under the PM curve.
 """
 
+#|-- MODELS
+#    |--logistic
+#    |--gompertz
+#    |--richards
+#
+#|-- MODEL FITTING
+#    |--fit
+#    |--get_area
+#    |--guess_lag
+#    |--guess_rate
+#    |--guess_plateau
+#    |--optimize_initial_u
+#    |--SumSquareError
+
 import numpy as np
 import pandas as pd
 
@@ -33,13 +47,36 @@ except ImportError:
         'Install scipy to extract curve parameters.')
 
 
-def logistic(x, A, u, d, v, y0):
-    """Logistic growth modelself.
+def fit(function, x, y):
+    """Fit the provided function to the x and y values.
 
-    Proposed in Zwietering et al., 1990 (PMID: 16348228)
+    The function parameters and the parameters covariance.
+    
+    NOTE: curve_fit is very sensitive to initial parameters. for growth curves, ini_u is key
+          modify so that you try multiple initial guess until you find the best fit --> see optimize_initial_u()
     """
-    y = (A / (1 + np.exp((((4 * u) / A) * (d - x)) + 2))) + y0
-    return y
+
+    # Compute guesses for the parameters
+    # This is necessary to get significant fits
+
+    ini_u = 1e-4 # biopython default of 4 leads to the wrong minimal optima (I use 1e-4 sometimes)
+    ini_v = 0.1; # neither gompertz or logisitc use this parameters, so meh
+
+    p0 = [guess_plateau(x, y), optimize_initial_u(function,x,y), guess_lag(x, y), ini_v, min(y)]
+
+    # often, y0 is estimated to be really low while is estimated to be really high, 
+    #        visual fit is good but parameter fit is awful, 
+    #        so here we are bounding the parameter estimate
+    p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)],
+                 [np.inf,np.inf,np.inf,np.inf,np.inf]);
+
+    params, pcov = curve_fit(function, x, y, p0=p0,bounds=p0_bounds,maxfev=10000,check_finite=True)
+
+    return params, pcov
+
+def get_area(y, x):
+    """Get the area under the curve."""
+    return trapz(y=y, x=x)
 
 
 def gompertz(x, A, u, d, v, y0):
@@ -48,16 +85,6 @@ def gompertz(x, A, u, d, v, y0):
     Proposed in Zwietering et al., 1990 (PMID: 16348228)
     """
     y = (A * np.exp(-np.exp((((u * np.e) / A) * (d - x)) + 1))) + y0
-    return y
-
-
-def richards(x, A, u, d, v, y0):
-    """Richards growth model (equivalent to Stannard).
-
-    Proposed in Zwietering et al., 1990 (PMID: 16348228)
-    """
-    y = (A * pow(1 + (v + (np.exp(1 + v) * np.exp((u / A) *
-                                                  (1 + v) * (1 + (1 / v)) * (d - x)))), -(1 / v))) + y0
     return y
 
 
@@ -91,7 +118,6 @@ def guess_lag(x, y):
 
     return flex
 
-
 def guess_plateau(x, y):
     """Given two axes returns a guess of the plateau point.
 
@@ -123,40 +149,29 @@ def guess_plateau(x, y):
 
 def guess_rate(x,y):
 
-	total_time = x[-1]-x[0];
-	total_growth = max(y)-min(y);
+    total_time = x[-1]-x[0];
+    total_growth = max(y)-min(y);
 
-	ini_r = float(total_growth) / float(total_time);
+    ini_r = float(total_growth) / float(total_time);
 
-	return ini_r
+    return ini_r
 
+def logistic(x, A, u, d, v, y0):
+    """Logistic growth modelself.
 
-def fit(function, x, y):
-    """Fit the provided function to the x and y values.
-
-    The function parameters and the parameters covariance.
-    
-    NOTE: curve_fit is very sensitive to initial parameters. for growth curves, ini_u is key
-          modify so that you try multiple initial guess until you find the best fit --> see optimize_initial_u()
+    Proposed in Zwietering et al., 1990 (PMID: 16348228)
     """
+    y = (A / (1 + np.exp((((4 * u) / A) * (d - x)) + 2))) + y0
+    return y
 
-    # Compute guesses for the parameters
-    # This is necessary to get significant fits
+def richards(x, A, u, d, v, y0):
+    """Richards growth model (equivalent to Stannard).
 
-    ini_u = 1e-4 # biopython default of 4 leads to the wrong minimal optima (I use 1e-4 sometimes)
-    ini_v = 0.1; # neither gompertz or logisitc use this parameters, so meh
-
-    p0 = [guess_plateau(x, y), optimize_initial_u(function,x,y), guess_lag(x, y), ini_v, min(y)]
-
-    # often, y0 is estimated to be really low while is estimated to be really high, 
-    #        visual fit is good but parameter fit is awful, 
-    #        so here we are bounding the parameter estimate
-    p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)],
-                 [np.inf,np.inf,np.inf,np.inf,np.inf]);
-
-    params, pcov = curve_fit(function, x, y, p0=p0,bounds=p0_bounds,maxfev=10000,check_finite=True)
-
-    return params, pcov
+    Proposed in Zwietering et al., 1990 (PMID: 16348228)
+    """
+    y = (A * pow(1 + (v + (np.exp(1 + v) * np.exp((u / A) *
+                                                  (1 + v) * (1 + (1 / v)) * (d - x)))), -(1 / v))) + y0
+    return y
 
 def optimize_initial_u(function,x,y):
     '''Try pre-determined initial guess of u (i.e. growth rate) and return the one that results in lowest SSE
@@ -194,8 +209,3 @@ def SumSquaredError(y_true,y_pred):
     sse = np.sqrt(se.sum(1).sum(0))
 
     return sse
-
-def get_area(y, x):
-    """Get the area under the curve."""
-    return trapz(y=y, x=x)
-
