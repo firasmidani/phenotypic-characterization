@@ -84,15 +84,6 @@ sys.path.append('..')
 from classical import fit, gompertz, logistic
 from plates import plotPlateGrowth
 
-    # lib_path_1 = '/Users/firasmidani/Downloads/phenotypic-characterization/growth_fitting_library.py'
-    # lib_path_2 = '/Users/firasmidani/Downloads/phenotypic-characterization/plate_reader_library.py'
-
-    # foo_1 = imp.load_source('growth_fitting_library',lib_path_1);
-    # foo_2 = imp.load_source('plate_reader_library',lib_path_2);
-
-    # from growth_fitting_library import fit, gompertz, logistic
-    # from plate_reader_library import plotPlateGrowth
-
 # UTILITY FUNCTIONS 
 
 def gpDerivative(x,gp):
