@@ -147,16 +147,15 @@ def fit(function, x, y):
     ini_v = 0.1; # neither gompertz or logisitc use this parameters, so meh
 
     p0 = [guess_plateau(x, y), optimize_initial_u(function,x,y), guess_lag(x, y), ini_v, min(y)]
-    #p0 = [guess_plateau(x, y), guess_rate(x,y), guess_lag(x, y), ini_v, min(y)]
-    #p0 = [guess_plateau(x, y), ini_u, guess_lag(x, y), ini_v, min(y)]
 
     # often, y0 is estimated to be really low while is estimated to be really high, 
-    #        visual fit is good but parameter fit is awful
+    #        visual fit is good but parameter fit is awful, 
+    #        so here we are bounding the parameter estimate
     p0_bounds = ([-np.inf,-np.inf,-np.inf,-np.inf,min(y)],
                  [np.inf,np.inf,np.inf,np.inf,np.inf]);
 
     params, pcov = curve_fit(function, x, y, p0=p0,bounds=p0_bounds,maxfev=10000,check_finite=True)
-    
+
     return params, pcov
 
 def optimize_initial_u(function,x,y):
