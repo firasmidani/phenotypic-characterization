@@ -2,7 +2,7 @@
 
 # Author: Firas Midani
 # Date Initial: 2019-04-22
-# Date Last Modified: 2019-06-06
+# Date Last Modified: 2019-05-07
 
 # DESCRIPTION Framework for processing plate reader data at the Britton Laboratory (BCM) and inferring growth dynamics. 
 
@@ -400,7 +400,7 @@ class GrowthMetrics(object):
     
     def inferGP_d(self,threshold=.95):
         '''
-        does not work yet - 2019.05.03 
+        works but delta is based on time.values (i.e. discretized, not continous) - 2019.05.07
         '''
         x = self.time.values
         gp = self.gp_model; 
