@@ -38,7 +38,7 @@
 #         | -- time
 #         | -- mods
 #         | -- classical_model
-#     | -- Classical
+#     | -- fitClassical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
 #     | -- inferDoublingTime
@@ -47,7 +47,7 @@
 #     | -- inferGP_K
 #     | -- inferGP_AUC
 #     | -- inferGPDynamics
-#     | -- GP
+#     | -- fitGP
 #     | -- predictClassical
 #     | -- predictGP
 #     | -- plot
@@ -314,7 +314,7 @@ class GrowthMetrics(object):
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
 
-    def Classical(self,classical_model=None):
+    def fitClassical(self,classical_model=None):
         '''Fits OD to a classical model of bacterial growth'''
        
         if classical_model==None:
@@ -332,7 +332,21 @@ class GrowthMetrics(object):
         except:
         	self.classical_model = classical_model;
         	self.params = [np.nan,np.nan,np.nan,0.1,y[0]]
+       
+    def fitGP(self):
+        '''Fit a Gaussian Process Regression model'''
+        x = self.time; 
+        y = self.data.values
         
+        k = GPy.kern.RBF(x.shape[1],ARD=True)
+
+        m = GPy.models.GPRegression(x,y,k)
+        m.optimize()
+        #print m
+        
+        self.gp_model = m;
+        #self.params = params;
+
     def inferClassicalDynamics(self):
         '''Infers then stores growth parameters (r,K,d,AUC,td) in key'''
         
@@ -436,20 +450,6 @@ class GrowthMetrics(object):
         self.key['GP_d'] = self.inferGP_d()[0]
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
-            
-    def GP(self):
-        '''Fit a Gaussian Process Regression model'''
-        x = self.time; 
-        y = self.data.values
-        
-        k = GPy.kern.RBF(x.shape[1],ARD=True)
-
-        m = GPy.models.GPRegression(x,y,k)
-        m.optimize()
-        #print m
-        
-        self.gp_model = m;
-        #self.params = params;
         
     def predictClassical(self,classical_model=gompertz):
         '''Predict OD using classical model'''
@@ -462,7 +462,6 @@ class GrowthMetrics(object):
         self.pred = [classical_model(xx,*self.params) for xx in x];
         self.key['classical_max'] = np.max(self.pred)
 
-    
     def predictGP(self):
         '''Predict OD using GP regression'''
         x = self.time.values;
@@ -471,8 +470,7 @@ class GrowthMetrics(object):
         
         self.pred = np.ravel(self.gp_model.predict(x)[0])
         self.key['GP_max'] = np.max(self.pred)
-       
-                
+               
     def plot(self):
         
         fig,ax = plt.subplots(figsize=[4,4]);
