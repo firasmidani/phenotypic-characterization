@@ -406,29 +406,8 @@ class GrowthMetrics(object):
         gp = self.gp_model; 
         
         mu,var = gpDerivative(x,gp);
-        #mu,cov = gp.predict(x,full_cov=True)
-        
-        #print mu
-        #print cov
-        #print mu[:,:,0]
-        #print var
-        #print var[:,0]
-        #print mu[:,0]
-        #print cov[:,0]
-        #print np.sqrt(cov[:,0][0])
-        #print stats.norm.cdf(0,mu[:,0][0],np.sqrt(cov[:,0][0]))
-        
-#         for ii,t in enumerate(zip(mu[:,0],cov[:,0])):
-#             print ii,
-#             m,v = t[0],t[1]
-#             print m,v
-#             print x[ii]
-#             z = stats.norm.cdf(x[ii],loc=m,scale=np.sqrt(v))
-#             print z
-#             z = z
             
         prob = np.array([stats.norm.cdf(0,loc=m,scale=np.sqrt(v))[0] for m,v in zip(mu[:,:,0],var[:,0])]);
-        #prob = np.array([stats.norm.cdf(0,loc=m,scale=np.sqrt(v))[0] for m,v in zip(mu[:,0],cov[:,0])]);
 
         ind = 0;
         while ind < prob.shape[0] and prob[ind] > threshold: 
