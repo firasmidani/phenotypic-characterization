@@ -12,6 +12,9 @@
 #         | -- control
 #         | -- data
 #         | -- time
+#         | -- input_time
+#         | -- input_data
+#         | -- mods
 #     | -- convertTimeUnits
 #     | -- extractGrowthData
 #     | -- logData
@@ -25,6 +28,7 @@
 #         | -- key
 #         | -- data
 #         | -- time 
+#         | -- mods 
 #     | -- plot
 
 # CLASS GrowthMetrics
@@ -32,6 +36,8 @@
 #         | -- key
 #         | -- data
 #         | -- time
+#         | -- mods
+#         | -- classical_model
 #     | -- Classical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
@@ -284,7 +290,7 @@ class GrowthData(object):
    
 class GrowthMetrics(object):
   
-    def __init__(self,growth=None,classical_model=None,gp_model=None,params=None,pred=None,mod=None):
+    def __init__(self,growth=None,classical_model=None,gp_model=None,params=None,pred=None,mods=None):
         '''
         Data structure for summarizing bacterial growth curves
         
@@ -305,6 +311,7 @@ class GrowthMetrics(object):
         self.time = growth.time.copy();
         self.data = growth.data.copy();
         self.key = growth.key.copy();
+        self.mods = growth.mods.copy();
         self.classical_model = classical_model;
 
     def Classical(self,classical_model=None):
