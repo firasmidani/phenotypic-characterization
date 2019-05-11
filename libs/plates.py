@@ -769,10 +769,13 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3)):
     '''
 
     # initialize dataframe
+    #legend = pd.DataFrame(index=df.index,columns=['Well','Row','Column','Letter'])
     legend = pd.DataFrame(index=df.index,columns=['Row','Column','Letter'])
     
     # map row letters to numbers
     legend_row = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8}
+
+    df_baseline = df.loc[:,0]; 
 
     # subtract T0 from other time points in each well
     if subtract:
@@ -782,16 +785,20 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3)):
     	df = smoothGrowthCurves(df,smooth_args[0],smooth_args[1])
 
     # caculate fold growth as maximum OD in each well relative to negative control
-    df_max = df.max(1)
-    df_fold = df_max/df_max.loc['A1']
+    df_max = df.max(1); 	
+    df_fold = df_max/df_max.loc['A1']; 
 
-    	# add metadata to each well: well row as number, well col as number, well identifier
+    # add metadata to each well: well row as number, well col as number, well identifier
     for idx in df.index:
+   	    #legend.loc[idx,:] = [idx,legend_row[idx[0]],int(idx[1:]),idx[0]]
    	    legend.loc[idx,:] = [legend_row[idx[0]],int(idx[1:]),idx[0]]
 
-    # add fold growth data to summary_table
-    summary = legend.join(pd.DataFrame(df_max,columns=['Max OD']))
-    summary = summary.join(pd.DataFrame(df_fold,columns=['Growth Fold']))
+    summary = pd.DataFrame(index=['Max OD','Fold Change','Baseline'],
+    	 				   columns=df.index,
+    				       data=[df_max.values,df_fold.values,df_baseline.values]).T
+
+    summary = legend.join(summary)
+
 
     return summary
 
