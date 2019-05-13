@@ -200,6 +200,17 @@ def optimize_initial_u(function,x,y):
         except:
             sse_list.append(np.inf)
 
+    # numpy version 1.15.4 returns without below unit control
+    # TypeError: only integer scalar arrays can be converted to a scalar index
+
+    ind = np.where(sse_list==np.min(sse_list));
+    if isinstance(ind,np.ndarray) and ind.shape[0]==1:
+        ind = ind[0];
+    elif isinstance(ind,list) and len(ind)==1:
+        ind = ind[0];
+    elif isinstance(ind,np.int64) or isinstance(ind,int):
+        ind = ind;
+
     ind = np.where(sse_list==np.min(sse_list))[0];
     ini_u = ini_u_list[ind];
 
