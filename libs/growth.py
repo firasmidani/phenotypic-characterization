@@ -66,8 +66,7 @@
 
 # TO DO
 
-# 1. key for objects should store whether modificiations (e.g. subtractControl or smoothData) were applied to object
-# 2. predictClassical() should not use gompertz by default
+# 1. predictClassical() should not use gompertz by default
 
 # IMPORT NECESSARY LIBRARIES
 

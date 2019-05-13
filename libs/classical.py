@@ -35,6 +35,12 @@ get_area           Calculate the area under the PM curve.
 #    |--optimize_initial_u
 #    |--SumSquareError
 
+# TO DO
+
+# 1. resolve potential issues with indexing in optimize_initial_u
+
+# IMPORT NECESSARY LIBRARIES
+
 import numpy as np
 import pandas as pd
 

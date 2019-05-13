@@ -47,6 +47,11 @@
 #    |-- getFormattedtime
 #    |-- nRGB
 
+# TO DO
+
+# 1. resolve differences between summarizeGrowthData and summarizeGrowthDataModified
+
+
 # IMPORT NECESSARY LIBRARIES
 
 import os
