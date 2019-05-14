@@ -217,6 +217,9 @@ class GrowthPlate(object):
         return GrowthData(sub_time,sub_data,sub_key,sub_mods)
 
     def plot(self):
+        '''
+        only works if data is a whole 96-well plate
+        '''
 
         df = self.data.copy().T;
         df.columns = np.ravel(self.time.copy().values);
@@ -261,9 +264,10 @@ class GrowthData(object):
 
     #enddef 
     
-    def plot(self):
+    def plot(self,fig=None,ax=None):
         
-        fig,ax = plt.subplots(figsize=[4,4]);
+        if not ax:
+            fig,ax = plt.subplots(figsize=[4,4]);
         
         ax.plot(self.time,self.data,lw=5,color=(0,0,0,1));
         
@@ -275,7 +279,9 @@ class GrowthData(object):
             ax.set_ylabel('log(OD)',fontsize=20);
         else:
             ax.set_ylabel('Optical Density',fontsize=20);
-        ax.set_title(self.key.Substrate[0],fontsize=20);
+        
+        if 'Substrate' in self.key.keys():
+            ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax
 
@@ -470,10 +476,11 @@ class GrowthMetrics(object):
         self.pred = np.ravel(self.gp_model.predict(x)[0])
         self.key['GP_max'] = np.max(self.pred)
                
-    def plot(self):
+    def plot(self,ax=None):
         
-        fig,ax = plt.subplots(figsize=[4,4]);
-        
+        if not ax:
+            fig,ax = plt.subplots(figsize=[4,4]);
+         
         ax.plot(self.time,self.data,lw=5,color=(0,0,0,0.65));
         ax.plot(self.time,self.pred,lw=5,color=(1,0,0,0.65));
         
