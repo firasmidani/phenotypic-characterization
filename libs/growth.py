@@ -29,6 +29,7 @@
 #         | -- data
 #         | -- time 
 #         | -- mods 
+#     | -- log
 #     | -- plot
 
 # CLASS GrowthMetrics
@@ -173,6 +174,15 @@ class GrowthPlate(object):
         self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
         self.mods.floored = True
 
+    def subtractBaseline(self):
+        '''Subtract first value in each array (column) from all elements of the array
+
+        NOTE: if performed after logging, this is equivalent to scaling relative to OD at T0!
+        '''
+
+        self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
+        self.mods.floored = True
+
     def subtractControl(self):
         '''Subtract array (column) belonging to control well from all wells'''
 
@@ -285,13 +295,37 @@ class GrowthData(object):
        
         return fig,ax
 
-    def log(self):
+    def logData(self):
         '''
         natural logarithm transform 
         '''
-        self.data = self.data.apply(lambda x: np.log(x+1e-3))
-        self.mods.logged = True
-    
+
+        if not self.mods.logged:
+            self.data = self.data.apply(lambda x: np.log(x+1e-3))
+            self.mods.logged = True
+        else: 
+            print 'WARNING: data has already been log-transformed.'
+
+    def smoothData(self,window=19,polyorder=3):
+        '''Smooth each array (column) with a Savitzky-Golay filter'''
+
+        if not self.mods.smoothed:
+            self.data = self.data.apply(lambda x: savgol_filter(x,window,polyorder), axis=0)
+            self.mods.smoothed = True
+        else: 
+            print 'WARNING: data has already been smoothed.'
+
+    def subtractBaseline(self):
+        '''Subtract first value in each array (column) from all elements of the array
+
+        NOTE: if performed after logging, this is equivalent to scaling relative to OD at T0!
+        '''
+
+        if not self.mods.floored:
+            self.data = self.data.apply(lambda x: x-self.data.iloc[0,:],axis=1)
+            self.mods.floored = True
+        else: 
+            print 'WARNING: baseline has already been subtracted'
    
 class GrowthMetrics(object):
   
