@@ -235,7 +235,7 @@ class GrowthPlate(object):
         df.columns = np.ravel(self.time.copy().values);
         summary = self.key;
 
-        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="");
+        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logged=self.mods.logged);
 
         return fig,axes
 
