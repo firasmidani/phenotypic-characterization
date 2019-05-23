@@ -39,6 +39,7 @@
 #         | -- time
 #         | -- mods
 #         | -- classical_model
+#     | -- findDiauxicShifts
 #     | -- fitClassical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
@@ -352,6 +353,21 @@ class GrowthMetrics(object):
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
+
+    def findDiauxicShifts(self):
+        '''
+        IN PROGRESS
+        '''
+        x = self.time.values
+        gp = self.gp_model;        
+        
+        mu,cov = gpDerivative(x,gp)
+
+        mu = np.ravel(mu);
+
+        peaks_idx = scipy.signal.find_peaks_cwt(mu,np.arange(1,25));
+        peaks_time = [time[ind] for ind in peaks_idx];
+
 
     def fitClassical(self,classical_model=None):
         '''Fits OD to a classical model of bacterial growth'''
