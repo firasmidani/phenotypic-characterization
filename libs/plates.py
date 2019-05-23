@@ -551,8 +551,6 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
 	        plt.setp(ax,yticks=[0,ymax],yticklabels=[])
 	        plt.setp(ax,xticks=[0,xmax],xticklabels=[])
 
-
-
 	    # add well identifier on top left of each subplot
 	    well_color = (0.65,0.165,0.165,0.8);#(0,0,1,0.5)
 	    ax.text(0., 1., idx, color=well_color,
@@ -569,7 +567,14 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
 	fig.text(0.515, 0.07, 'Time (hours)', fontsize=15, 
 	         ha='center', va='bottom', 
 	         transform=ax.transAxes)
-	fig.text(0.1, 0.5, 'Optical Density (620 nm)', fontsize=15, 
+
+	
+	if logged:
+		ylabel_text = 'log(Optical Density) (620 nm)';
+	else:
+		ylabel_text = 'Optical Density (620 nm)';
+			
+	fig.text(0.1, 0.5, ylabel_text, fontsize=15, 
 	         va='center', ha='right', rotation='vertical',
 	         transform=ax.transAxes)
 

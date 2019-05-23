@@ -525,4 +525,7 @@ class GrowthMetrics(object):
         
         ax.set_title(self.key.Substrate[0],fontsize=20);
        
-        return fig,ax    
+        if not ax:
+            return fig,ax  
+        else:
+            return None
