@@ -28,8 +28,12 @@
 #         | -- key
 #         | -- data
 #         | -- time 
+#         | -- input_time
+#         | -- input_data
 #         | -- mods 
-#     | -- log
+#     | -- logData
+#     | -- smoothData
+#     | -- subtractBaseline
 #     | -- plot
 
 # CLASS GrowthMetrics
@@ -39,6 +43,7 @@
 #         | -- time
 #         | -- mods
 #         | -- classical_model
+#         | -- gp_model
 #     | -- findDiauxicShifts
 #     | -- fitClassical
 #     | -- inferClassicalDynamics
@@ -69,6 +74,7 @@
 # TO DO
 
 # 1. predictClassical() should not use gompertz by default
+# 2. gpDerivative should lead to a new attribute for GrowthMetrics object
 
 # IMPORT NECESSARY LIBRARIES
 
@@ -353,6 +359,7 @@ class GrowthMetrics(object):
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
+        self.gp_model = None;
 
     def findDiauxicShifts(self):
         '''
@@ -540,7 +547,7 @@ class GrowthMetrics(object):
         ax.set_ylabel('Optical Density',fontsize=20);
         
         ax.set_title(self.key.Substrate[0],fontsize=20);
-       
+        
         if not ax:
             return fig,ax  
         else:
