@@ -8,6 +8,7 @@
 
 # gitignore/community/Python/JupyterNotebooks.gitignore
 #
+*ipynb
 .ipynb_checkpoints
 *./ipynb_checkpoints/*
 #
