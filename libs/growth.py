@@ -28,8 +28,12 @@
 #         | -- key
 #         | -- data
 #         | -- time 
+#         | -- input_time
+#         | -- input_data
 #         | -- mods 
-#     | -- log
+#     | -- logData
+#     | -- smoothData
+#     | -- subtractBaseline
 #     | -- plot
 
 # CLASS GrowthMetrics
@@ -39,6 +43,7 @@
 #         | -- time
 #         | -- mods
 #         | -- classical_model
+#         | -- gp_model
 #     | -- fitClassical
 #     | -- inferClassicalDynamics
 #     | -- inferClassicalAUC
@@ -68,6 +73,7 @@
 # TO DO
 
 # 1. predictClassical() should not use gompertz by default
+# 2. gpDerivative should lead to a new attribute for GrowthMetrics object
 
 # IMPORT NECESSARY LIBRARIES
 
@@ -352,6 +358,7 @@ class GrowthMetrics(object):
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
+        self.gp_model = None;
 
     def fitClassical(self,classical_model=None):
         '''Fits OD to a classical model of bacterial growth'''
