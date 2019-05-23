@@ -486,7 +486,7 @@ def plotGroupedGrowth(subtrate,df_growth_means,df_plate,df_dict):
 
 	return fig,ax
 
-def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
+def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logged=False):
 
 	fig,axes = plt.subplots(8,12,figsize=[12,8])
 
@@ -495,6 +495,7 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 
 	# round up window limits to integers
 	ymax = np.ceil(df.max().max()); 
+	ymin = np.floor(df.min().min());
 	xmax = float(df.columns[-1])
 	xmax_h = int(np.ceil(float(df.columns[-1])/60/60))
 
@@ -505,12 +506,12 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 	    ax = axes[r,c]
 	    
 	    # green if above threshoold, gray if below
-	    if summary.loc[idx,'Growth Fold']>threshold:
+	    if summary.loc[idx,'Fold Change']>threshold:
 	        #color_l = (0.0,0.40,0.0,1.00) # green
 	        #color_f = (0.0,0.40,0.0,0.35)
 	        color_l = (0.0,0.00,1.0,1.00) # blue
 	        color_f = (0.0,0.00,1.0,0.15)
-	    elif summary.loc[idx,'Growth Fold']<0.50:
+	    elif summary.loc[idx,'Fold Change']<0.50:
 	    	#color_l = (1.0,0.6,0.0,1.00) # orange
 	    	#color_f = (1.0,0.6,0.0,0.35)
 	    	color_l = (1.0,0.0,0.0,1.00) # red
@@ -518,26 +519,38 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 	    else:
 	        color_l = (0.,0.,0.,1.00) # black
 	        color_f = (0.,0.,0.,0.15)
-	    
+
 	    ax.set_ylim([0,ymax])
 	    ax.set_xlim([0,xmax])
+
+	    if logged:
+	    	ax.set_ylim([ymin,ymax])
 
 	    x = df.columns
 	    y = df.loc[idx,:]
 
 	    ax.plot(x,y,color=color_l,lw=1.5)
 	    
-	    ax.fill_between(x=x,y1=[0]*df.shape[1],y2=y,color=color_f)
 
-	    
+	    if logged:
+	    	ax.fill_between(x=x,y1=[ax.get_ylim()[0]]*df.shape[1],y2=y,color=color_f)
+	    else:
+	    	ax.fill_between(x=x,y1=[0]*df.shape[1],y2=y,color=color_f)
+
 	    # show tick labels for bottom left subplot only
-	    if (r==7 and c==0):
+	    if (r==7 and c==0) and (logged):
+	        plt.setp(ax,yticks=[ymin,ymax])
+	        plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+	    elif (r==7 and c==0):
 	        plt.setp(ax,yticks=[0,ymax])
 	        plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+	    elif logged:
+	        plt.setp(ax,yticks=[ymin,ymax],yticklabels=[])
+	        plt.setp(ax,xticks=[0,xmax],xticklabels=[])
 	    else:
 	        plt.setp(ax,yticks=[0,ymax],yticklabels=[])
 	        plt.setp(ax,xticks=[0,xmax],xticklabels=[])
-	    
+
 	    # add well identifier on top left of each subplot
 	    well_color = (0.65,0.165,0.165,0.8);#(0,0,1,0.5)
 	    ax.text(0., 1., idx, color=well_color,
@@ -547,11 +560,21 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath=""):
 	    ax.text(1., 1., "%0.2f" % summary.loc[idx,'Max OD'], color='black',
 	            horizontalalignment='right', verticalalignment='top', 
 	            transform=ax.transAxes)
-	    
+	
+	# if logged:
+	# 	ax.set_yscale('log')
+
 	fig.text(0.515, 0.07, 'Time (hours)', fontsize=15, 
 	         ha='center', va='bottom', 
 	         transform=ax.transAxes)
-	fig.text(0.1, 0.5, 'Optical Density (620 nm)', fontsize=15, 
+
+	
+	if logged:
+		ylabel_text = 'log(Optical Density) (620 nm)';
+	else:
+		ylabel_text = 'Optical Density (620 nm)';
+			
+	fig.text(0.1, 0.5, ylabel_text, fontsize=15, 
 	         va='center', ha='right', rotation='vertical',
 	         transform=ax.transAxes)
 
