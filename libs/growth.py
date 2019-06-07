@@ -75,6 +75,7 @@
 
 # 1. predictClassical() should not use gompertz by default
 # 2. gpDerivative should lead to a new attribute for GrowthMetrics object
+# 3. inferDoublingTime should only be run on logged data. what if data is unlogged?
 
 # IMPORT NECESSARY LIBRARIES
 
@@ -435,6 +436,8 @@ class GrowthMetrics(object):
         # reaffirmed by Swain et al. 2016. Nature Comm.
         #  The doubling time is ln(2) times the inverse of the growth rate. 
         '''
+        
+        ## check if logged, what should you if it is not ?
 
         r = self.key['%s_r' % mtype]
 
