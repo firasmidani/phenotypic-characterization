@@ -50,7 +50,7 @@
 # TO DO
 
 # 1. resolve differences between summarizeGrowthData and summarizeGrowthDataModified
-
+# 2. stop at H12 for readPLateReader
 # IMPORT NECESSARY LIBRARIES
 
 import os
@@ -761,6 +761,9 @@ def readPlateReaderData(filepath,interval=600):
 
 	df.index.name = 'Well'
 	df.T.index.name = 'Time'
+
+	# this makes sure to grab only rows that begin with well ids
+	df = df.loc[parseWellLayout().index,:]
 
 	df.to_csv(newfile, sep='\t')
 

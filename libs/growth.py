@@ -234,7 +234,7 @@ class GrowthPlate(object):
                         
         return GrowthData(sub_time,sub_data,sub_key,sub_mods)
 
-    def plot(self):
+    def plot(self,savefig=False,filepath=""):
         '''
         only works if data is a whole 96-well plate
         '''
@@ -243,7 +243,7 @@ class GrowthPlate(object):
         df.columns = np.ravel(self.time.copy().values);
         summary = self.key;
 
-        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logged=self.mods.logged);
+        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=savefig,filepath=filepath,logged=self.mods.logged);
 
         return fig,axes
 
