@@ -81,7 +81,6 @@ from config import biolog_pm_layout as bpl
 
 sns.set_style('whitegrid');
 
-
 # BEGIN FUNCTIONS
 
 def BOM_to_CSV(filepath,newfile,encoding):
@@ -721,7 +720,7 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
     return fig,axes
 
-def populatePlateKey(plate):
+def initializePlateKey(plate):
     
     isolate,pm = parsePlateName(plate);
     
@@ -737,8 +736,8 @@ def populatePlateKey(plate):
     
     plate = [plate]*len(substrate);
     
-    key = pd.DataFrame([wells,isolate,substrate,plate],
-                      index=['Well','Isolate','Substrate','Plate']);
+    key = pd.DataFrame([wells,plate,isolate,substrate],
+                      index=['Well','Plate','Isolate','Substrate']);
     
     key = key.T
 
@@ -881,7 +880,7 @@ def summarizeGrowthDataModified(df,subtract=1,smooth=1,smooth_args=(19,3)):
 
     return summary
 
-def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3)):
+def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id=False):
     '''
     summarizes the location and growth statistics for each well in a plate 
 
@@ -911,17 +910,17 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3)):
     df_max = df.max(1);     
     df_fold = df_max/df_max.loc['A1']; 
 
-    # add metadata to each well: well row as number, well col as number, well identifier
-    for idx in df.index:
-        #legend.loc[idx,:] = [idx,legend_row[idx[0]],int(idx[1:]),idx[0]]
-        legend.loc[idx,:] = [legend_row[idx[0]],int(idx[1:]),idx[0]]
-
-    summary = pd.DataFrame(index=['Max OD','Fold Change','Baseline'],
+    summary = pd.DataFrame(index=['Baseline OD','Max OD','Fold Change'],
                            columns=df.index,
-                           data=[df_max.values,df_fold.values,df_baseline.values]).T
+                           data=[df_baseline.values,df_max.values,df_fold.values]).T
+    
+    if expand_well_id:
+        
+        # add metadata to each well: well row as number, well col as number, well identifier
+        for idx in df.index:
+            legend.loc[idx,:] = [legend_row[idx[0]],int(idx[1:]),idx[0]]
 
-    summary = legend.join(summary)
-
+        summary = legend.join(summary)
 
     return summary
 
