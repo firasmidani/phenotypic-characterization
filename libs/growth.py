@@ -197,13 +197,37 @@ class GrowthPlate(object):
         self.data = self.data.apply(lambda x: x-self.data.loc[:,self.control],axis=0)
         self.mods.controlled = True
 
-    def convertTimeUnits(self):
+    def convertTimeUnits(self,input='seconds',output='hours'):
         '''Convert time array (column) from units of seconds to hours
         '''
         
-        self.time = self.time.astype(float)/3600        
+        if (input=='seconds') and (output=='hours'):
+
+            factor = 1.0/3600
+
+        elif (input=='seconds') and (output=='minutes'):
+
+            factor = 1.0/60
+
+        elif (input=='minutes') and (output=='hours'):
+
+            factor = 1.0/60
+
+        elif (input=='minutes') and (output=='seconds'):
+
+            factor = 60
+
+        elif (input=='hours') and (output=='minutes'):
+
+            factor = 60
+
+        elif (input=='hours') and (output=='seconds'):
+
+            factor = 3600
+
+        self.time = self.time.astype(float) * factor        
                         
-    def extractGrowthData(self,arg_dict={}):
+    def extractGrowthData(self,arg_dict={},unmodified=False):
         '''
         NOTE: argument is framed as a dictionary to allow for non-biolog formats of plates but could simply be substrate
         
@@ -227,11 +251,18 @@ class GrowthPlate(object):
         sub_key = self.key[self.key.isin(arg_dict).sum(1)==len(arg_dict)];
         sub_key_idx = sub_key.index;
         
-        sub_data = self.data.loc[:,sub_key_idx];
-        sub_time = self.time;
-
         sub_mods = self.mods
-                        
+
+        if unmodified:
+
+            sub_data = self.input_data.loc[:,sub_key_idx];
+            sub_time = self.input_time;
+
+        else:
+
+            sub_data = self.data.loc[:,sub_key_idx];
+            sub_time = self.time;
+
         return GrowthData(sub_time,sub_data,sub_key,sub_mods)
 
     def plot(self,savefig=False,filepath=""):
@@ -357,6 +388,7 @@ class GrowthMetrics(object):
 
         self.time = growth.time.copy();
         self.data = growth.data.copy();
+        
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
@@ -468,8 +500,9 @@ class GrowthMetrics(object):
 
         return mu[ind,0][0],np.diag(cov)[ind][0],ind
     
-    def inferGP_AUC(self):
+    def inferGP_AUC(self,logged=False):
         '''Infers area under the curve with GP regression'''
+
         x = self.time.values
         gp = self.gp_model; 
         
@@ -524,7 +557,7 @@ class GrowthMetrics(object):
         #K,r,d,v,y0 = self.params
         
         #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
-        self.pred = [classical_model(xx,*self.params) for xx in x];
+        self.pred = np.array([classical_model(xx,*self.params) for xx in x]);
         self.key['classical_max'] = np.max(self.pred)
 
     def predictGP(self):
@@ -536,9 +569,9 @@ class GrowthMetrics(object):
         self.pred = np.ravel(self.gp_model.predict(x)[0])
         self.key['GP_max'] = np.max(self.pred)
                
-    def plot(self,ax=None):
+    def plot(self,ax_arg=None):
         
-        if not ax:
+        if not ax_arg:
             fig,ax = plt.subplots(figsize=[4,4]);
          
         ax.plot(self.time,self.data,lw=5,color=(0,0,0,0.65));
@@ -551,7 +584,7 @@ class GrowthMetrics(object):
         
         ax.set_title(self.key.Substrate[0],fontsize=20);
         
-        if not ax:
+        if not ax_arg:
             return fig,ax  
         else:
             return None
