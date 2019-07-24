@@ -265,7 +265,7 @@ class GrowthPlate(object):
 
         return GrowthData(sub_time,sub_data,sub_key,sub_mods)
 
-    def plot(self,savefig=False,filepath=""):
+    def plot(self,title="",savefig=False,filepath=""):
         '''
         only works if data is a whole 96-well plate
         '''
@@ -273,8 +273,9 @@ class GrowthPlate(object):
         df = self.data.copy().T;
         df.columns = np.ravel(self.time.copy().values);
         summary = self.key;
+        title = summary.Plate[0]
 
-        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=savefig,filepath=filepath,logged=self.mods.logged);
+        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title=title,savefig=savefig,filepath=filepath,logged=self.mods.logged);
 
         return fig,axes
 
@@ -474,7 +475,7 @@ class GrowthMetrics(object):
         r = self.key['%s_r' % mtype]
 
         #r = (np.log10(2)/r)*60; 
-        r = (np.log(2)/r)*60; # doubling time in minutes
+        r = (np.log(2)/r)*60.0; # doubling time in minutes
 
         return r
 
@@ -534,7 +535,7 @@ class GrowthMetrics(object):
         if ind == prob.shape[0]:
             ind -= 1
             
-        return x[ind]
+        return float(x[ind])
     
     def inferGPDynamics(self):
         '''Infers then stores growth parameters (r,K,AUC,td) in key'''
@@ -545,7 +546,7 @@ class GrowthMetrics(object):
         
         self.key['GP_r'] = self.inferGP_r()[0]
         self.key['GP_K'] = self.inferGP_K()[0]
-        self.key['GP_d'] = self.inferGP_d()[0]
+        self.key['GP_d'] = self.inferGP_d()
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
         

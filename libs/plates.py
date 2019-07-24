@@ -335,7 +335,7 @@ def parseBiologLayout():
     biolog_layout = pd.DataFrame([bpl.Carbon1,bpl.Carbon2,bpl.PhosphorusAndSulfur,
                                   bpl.PeptideNitrogen1,bpl.PeptideNitrogen2,bpl.PeptideNitrogen3],
                                  index=['PM1','PM2','PM3','PM4','PM5','PM^'],
-                                 columns=parseWellLayout().index).T
+                                 columns=parseWellLayout(order_axis=0).index).T
 
     return biolog_layout
 
@@ -558,53 +558,53 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
             color_l = (0.,0.,0.,1.00) # black
             color_f = (0.,0.,0.,0.15)
 
-        ax.set_ylim([0,ymax])
-        ax.set_xlim([0,xmax])
+        ax.set_ylim([0,ymax]);
+        ax.set_xlim([0,xmax]);
 
         if logged:
-            ax.set_ylim([ymin,ymax])
+            ax.set_ylim([ymin,ymax]);
 
-        x = df.columns
-        y = df.loc[idx,:]
+        x = df.columns;
+        y = df.loc[idx,:];
 
-        ax.plot(x,y,color=color_l,lw=1.5)
+        ax.plot(x,y,color=color_l,lw=1.5);
         
 
         if logged:
-            ax.fill_between(x=x,y1=[ax.get_ylim()[0]]*df.shape[1],y2=y,color=color_f)
+            ax.fill_between(x=x,y1=[ax.get_ylim()[0]]*df.shape[1],y2=y,color=color_f);
         else:
-            ax.fill_between(x=x,y1=[0]*df.shape[1],y2=y,color=color_f)
+            ax.fill_between(x=x,y1=[0]*df.shape[1],y2=y,color=color_f);
 
         # show tick labels for bottom left subplot only
         if (r==7 and c==0) and (logged):
-            plt.setp(ax,yticks=[ymin,ymax])
-            plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+            plt.setp(ax,yticks=[ymin,ymax]);
+            plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h]);
         elif (r==7 and c==0):
-            plt.setp(ax,yticks=[0,ymax])
-            plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h])
+            plt.setp(ax,yticks=[0,ymax]);
+            plt.setp(ax,xticks=[0,xmax],xticklabels=[0,xmax_h]);
         elif logged:
-            plt.setp(ax,yticks=[ymin,ymax],yticklabels=[])
-            plt.setp(ax,xticks=[0,xmax],xticklabels=[])
+            plt.setp(ax,yticks=[ymin,ymax],yticklabels=[]);
+            plt.setp(ax,xticks=[0,xmax],xticklabels=[]);
         else:
-            plt.setp(ax,yticks=[0,ymax],yticklabels=[])
-            plt.setp(ax,xticks=[0,xmax],xticklabels=[])
+            plt.setp(ax,yticks=[0,ymax],yticklabels=[]);
+            plt.setp(ax,xticks=[0,xmax],xticklabels=[]);
 
         # add well identifier on top left of each subplot
         well_color = (0.65,0.165,0.165,0.8);#(0,0,1,0.5)
         ax.text(0., 1., idx, color=well_color,
                 horizontalalignment='left', verticalalignment='top', 
-                transform=ax.transAxes)
+                transform=ax.transAxes);
 
         ax.text(1., 1., "%0.2f" % summary.loc[idx,'Max OD'], color='black',
                 horizontalalignment='right', verticalalignment='top', 
-                transform=ax.transAxes)
+                transform=ax.transAxes);
     
     # if logged:
     #   ax.set_yscale('log')
 
     fig.text(0.515, 0.07, 'Time (hours)', fontsize=15, 
              ha='center', va='bottom', 
-             transform=ax.transAxes)
+             transform=ax.transAxes);
 
     
     if logged:
@@ -614,9 +614,9 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
             
     fig.text(0.1, 0.5, ylabel_text, fontsize=15, 
              va='center', ha='right', rotation='vertical',
-             transform=ax.transAxes)
+             transform=ax.transAxes);
 
-    fig.suptitle(title,fontsize=15)
+    fig.suptitle(title,fontsize=15);
 
     if savefig:
 
@@ -880,7 +880,7 @@ def summarizeGrowthDataModified(df,subtract=1,smooth=1,smooth_args=(19,3)):
 
     return summary
 
-def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id=False):
+def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id=True):
     '''
     summarizes the location and growth statistics for each well in a plate 
 
