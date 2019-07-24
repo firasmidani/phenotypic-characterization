@@ -7,6 +7,7 @@
 # |--libs
 #     |--classical.py
 #     |--growth.py
+#     |--pipeline.py
 #     |--plates.py
 
-__all__ = ["classical","growth","plates"]
+__all__ = ["classical","growth","pipeline","plates"]
