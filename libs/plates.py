@@ -892,7 +892,7 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id
 
     # initialize dataframe
     #legend = pd.DataFrame(index=df.index,columns=['Well','Row','Column','Letter'])
-    legend = pd.DataFrame(index=df.index,columns=['Row','Column','Letter'])
+    legend = pd.DataFrame(index=df.index,columns=['Row','Column','Letter','Well_ID'])
     
     # map row letters to numbers
     legend_row = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8}
@@ -918,7 +918,12 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id
         
         # add metadata to each well: well row as number, well col as number, well identifier
         for idx in df.index:
-            legend.loc[idx,:] = [legend_row[idx[0]],int(idx[1:]),idx[0]]
+            row = legend_row[idx[0]];
+            col = int(idx[1:]);
+            letter = idx[0];
+            well_id = '%s%s' % (idx[0],idx[1]);
+
+            legend.loc[idx,:] = [row,col,letter,well_id];
 
         summary = legend.join(summary)
 
