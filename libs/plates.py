@@ -808,6 +808,8 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
 
     if not index_col:
         df.index = parseWellLayout(order_axis=1).index.values
+#    else: 
+#        df = df.loc[parseWellLayout(order_axis=1).index.values,:]
 
     df.index.name = 'Well'
     df.T.index.name = 'Time'
@@ -921,7 +923,7 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id
             row = legend_row[idx[0]];
             col = int(idx[1:]);
             letter = idx[0];
-            well_id = '%s%s' % (idx[0],idx[1]);
+            well_id = '%s%s' % (letter,col);
 
             legend.loc[idx,:] = [row,col,letter,well_id];
 

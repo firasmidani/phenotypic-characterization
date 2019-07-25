@@ -140,9 +140,10 @@ def preModellingDataFormatting(data_dict,summary_dict,plate_list):
 def modelPlateData(plate_data,plate_summary):
     
     params = ['GP_r','GP_td','GP_d','GP_K','GP_AUC','GP_max'];
-    
+   
+    pred_data = plate_data.copy() 
     plate_data = growth.GrowthPlate(data=plate_data,key=plate_summary);
-    
+ 
     plate_data.convertTimeUnits()
     plate_data.logData()
     plate_data.subtractBaseline()
@@ -175,14 +176,17 @@ def modelPlateData(plate_data,plate_summary):
         
         growth_summary_df.loc[to_index,to_header] = [float(ii) for ii in well_data.key.loc[to_index,to_header].values];
         
+        pred_data.loc[:,well] = well_data.pred;
+
     print 
     plate_summary = plate_summary.join(growth_summary_df.astype(float));
 
-    return plate_summary
+    return plate_summary,pred_data
 
 def modelMultiplePlates(data_dict,summary_dict,plate_list):
         
     new_summary_dict = {};
+    pred_data_dict = {};
     
     for plate_id in plate_list:
         
@@ -191,7 +195,7 @@ def modelMultiplePlates(data_dict,summary_dict,plate_list):
         plate_data = data_dict[plate_id]
         plate_summary = summary_dict[plate_id]
         
-        new_summary_dict[plate_id] = modelPlateData(plate_data,plate_summary)
+        new_summary_dict[plate_id],pred_data_dict[plate_id] = modelPlateData(plate_data,plate_summary)
         
         filepath = "../analysis/%s/%s.txt" % (plate_summary.Isolate[0],
                                               plate_summary.Plate[0])
