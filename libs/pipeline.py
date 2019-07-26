@@ -205,7 +205,7 @@ def modelMultiplePlates(data_dict,summary_dict,plate_list):
         if not os.path.isfile(filepath):
             new_summary_dict[plate_id].to_csv(filepath,sep='\t',header=True,index=True)
             
-    return new_summary_dict
+    return new_summary_dict,pred_data_dict
 
 
 def visualCheck(data_dict,summary_dict,plate_list,save_dirname="../analysis"):
