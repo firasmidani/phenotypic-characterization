@@ -778,6 +778,9 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
     '''
 
     filename, filebase, newfile = breakDownFilePath(filepath,save_dirname)
+    print filebase
+    print filename
+    print newfile
 
     content = open(filepath).readlines();
     sneakPeak = content[0];
@@ -807,7 +810,7 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
     df.columns = listTimePoints(interval,df.shape[1])
 
     if not index_col:
-        df.index = parseWellLayout(order_axis=1).index.values
+        df.index = parseWellLayout(order_axis=0).index.values
 #    else: 
 #        df = df.loc[parseWellLayout(order_axis=1).index.values,:]
 
