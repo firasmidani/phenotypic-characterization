@@ -778,9 +778,6 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
     '''
 
     filename, filebase, newfile = breakDownFilePath(filepath,save_dirname)
-    print filebase
-    print filename
-    print newfile
 
     content = open(filepath).readlines();
     sneakPeak = content[0];
