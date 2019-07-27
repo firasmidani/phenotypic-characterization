@@ -351,8 +351,8 @@ def parseWellLayout(order_axis=1):
     Initializes a pandas.DataFrame where indices are well identifiers (e.g. C8)
     and variables indicate row letter and column number
 
-    order_axis = 0 indicates order IDs by column (i.e. A1,B1,C1, ... , A2,B2,C2, ...)
-    order_axis = 1 indicates order IDs by column (i.e. A1,A2,A3, ... , B1,B2,B3, ...)
+    order_axis = 0 indicates order IDs by column (i.e. A1,A2,A3, ... , B1,B2,B3, ...)
+    order_axis = 1 indicates order IDs by column (i.e. A1,B1,C1, ... , A2,B2,C2, ...)
 
     Returns pandas.DataFrame
     '''
@@ -811,8 +811,6 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
 
     if not index_col:
         df.index = parseWellLayout(order_axis=0).index.values
-#    else: 
-#        df = df.loc[parseWellLayout(order_axis=1).index.values,:]
 
     df.index.name = 'Well'
     df.T.index.name = 'Time'
