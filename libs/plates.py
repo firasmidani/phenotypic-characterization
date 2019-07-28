@@ -120,9 +120,11 @@ def breakDownFilePath(filepath,save_dirname=None):
     dirname = os.path.dirname(filepath);
 
     if save_dirname:
-        newfilepath = '%s/%s.tsv' % (save_dirname,filebase);
+        sep = ['' if save_dirname[-1]=='/' else '/'][0]
+        newfilepath = '%s%s%s.tsv' % (save_dirname,sep,filebase);
     else:
-        newfilepath = '%s/%s.tsv' % (dirname,filebase);
+        sep = ['' if dirname[-1]=='/'else '/'][0]; 
+        newfilepath = '%s%s%s.tsv' % (dirname,sep,filebase); 
 
     return filename, filebase, newfilepath
 
@@ -235,7 +237,8 @@ def findPlateReaderFiles(directory):
     for (dirpath, dirnames, filenames) in os.walk(directory):
         for filename in filenames:
             if filename.endswith(".TXT") or  filename.endswith(".asc"):
-                ls_files.append('%s/%s' % (dirpath,filename))
+                sep = ['' if dirpath[-1]=='/' else '/'][0]
+                ls_files.append('%s%s%s' % (dirpath,sep,filename))
     
     return ls_files
 
@@ -806,7 +809,7 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
 
     df.columns = listTimePoints(interval,df.shape[1])
 
-    if not index_col:
+    if index_col==None:
         df.index = parseWellLayout(order_axis=0).index.values
 
     df.index.name = 'Well'
