@@ -16,4 +16,4 @@
 # |--examples
 #     |--Phenotypic-Characterization Growth Module Walk-Through.ipynb 
 
-__all__ = ["libs","conig"]
+__all__ = ["libs","config"]

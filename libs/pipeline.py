@@ -28,7 +28,8 @@ sns.set_style('whitegrid')
 sys.path.append("/data/davidalb/users/fsm/biolog/phenotypic-characterization/")
 from libs import classical,growth,plates
 
-from growth_curve_flags import *
+#sys.path.append("/data/davidalb/users/fsm/biolog/metadata")
+#from flags import *
 
 def readPlateReaderFolder(folderpath,save=False,save_dirname='../data_formatted',interval=600):
     
@@ -41,6 +42,7 @@ def readPlateReaderFolder(folderpath,save=False,save_dirname='../data_formatted'
         _, filebase, _ = plates.breakDownFilePath(filepath);
 
         df = plates.readPlateReaderData(filepath,save=save,save_dirname=save_dirname);
+        df = plates.readPlateReaderData(filepath,save=save,save_dirname=save_dirname);
         
         df_dict[filebase] = formatPlateData(df,interval=interval);
 
@@ -48,38 +50,59 @@ def readPlateReaderFolder(folderpath,save=False,save_dirname='../data_formatted'
 
 def readPlateReaderMapping(filepath,filter_plates=True):
     
-    mapping_ribotype = pd.read_csv(filepath,sep='\t',header=0,index_col=0)
+    mapping_df = pd.read_csv(filepath,sep='\t',header=0,index_col=0)
     
     if filter_plates:
-        to_remove = mapping_ribotype[mapping_ribotype.Ignore=='Yes'].index
-        mapping_ribotype = mapping_ribotype.drop(labels=to_remove,axis=0)
+        to_remove = mapping_df[mapping_df.Ignore=='Yes'].index
+        mapping_df = mapping_df.drop(labels=to_remove,axis=0)
 
-    return mapping_ribotype
+    return mapping_df
+
+def initializePlateMapping(data_dict,flagged_plates):
+    
+    # initialize list of plates based on available data
+    plate_list_df = pd.DataFrame(index=data_dict.keys(),
+                                 columns=['Isolate','PM','Rep']);
+
+    for key in data_dict.keys():
+
+        basename = key.split('_')[0];
+        iso = basename;
+        pmn = int(key.split('PM')[1][0]);
+        rep = [int(key.split('-')[-1]) if '-' in key else 1][0];
+        plate_list_df.loc[key] = [iso,pmn,rep]#,ribo];
+    
+    plate_list_df = plate_list_df.sort_values(['Isolate','PM','Rep'],ascending=True);
+    plate_list_df = plate_list_df.dropna(axis=0)
+
+    plate_list_df = plate_list_df.drop(flagged_plates)
+    
+    return plate_list_df
 
 def expandPlateMapping(data_dict,mapping_df,flagged_plates):
     
     # initialize list of plates based on available data
-    plate_list = pd.DataFrame(index=data_dict.keys(),
-                              columns=['Isolate','PM','Rep','Ribotype'])
+    plate_list_df = pd.DataFrame(index=data_dict.keys(),
+                                 columns=['Isolate','PM','Rep','Ribotype'])
 
     for key in data_dict.keys():
 
-    	# if plate id is not in mappind data, ignore
+    	# if plate id is not in mapping data, ignore
         basename = key.split('_')[0];
         if basename not in mapping_df.index:
             continue
         iso = mapping_df.loc[basename,'Isolate'];
-        pmn = int(key.split('PM')[1][0]);
+        pmn = int(key.split('PM')[1][0]);fl
         rep = [int(key.split('-')[-1]) if '-' in key else 1][0];
         ribo = mapping_df.loc[basename,'Ribotype'];
-        plate_list.loc[key] = [iso,pmn,rep,ribo];
+        plate_list_df.loc[key] = [iso,pmn,rep,ribo];
     
-    plate_list = plate_list.sort_values(['Isolate','PM','Rep','Ribotype'],ascending=True);
-    plate_list = plate_list.dropna(axis=0)
+    plate_list_df = plate_list_df.sort_values(['Isolate','PM','Rep','Ribotype'],ascending=True);
+    plate_list_df = plate_list_df.dropna(axis=0)
 
-    plate_list = plate_list.drop(flagged_plates)
+    plate_list_df = plate_list_df.drop(flagged_plates)
     
-    return plate_list
+    return plate_list_df
 
 def formatPlateData(df,interval=600):
     
@@ -197,10 +220,10 @@ def modelMultiplePlates(data_dict,summary_dict,plate_list):
         
         new_summary_dict[plate_id],pred_data_dict[plate_id] = modelPlateData(plate_data,plate_summary)
         
-        filepath = "../analysis/%s/%s.txt" % (plate_summary.Isolate[0],
+        filepath = "../results/%s/%s.txt" % (plate_summary.Isolate[0],
                                               plate_summary.Plate[0])
         
-        plates.createFolder('../analysis/%s/' % plates.parsePlateName(plate_id)[0])
+        plates.createFolder('../results/%s/' % plates.parsePlateName(plate_id)[0])
         
         if not os.path.isfile(filepath):
             new_summary_dict[plate_id].to_csv(filepath,sep='\t',header=True,index=True)
@@ -208,7 +231,7 @@ def modelMultiplePlates(data_dict,summary_dict,plate_list):
     return new_summary_dict,pred_data_dict
 
 
-def visualCheck(data_dict,summary_dict,plate_list,save_dirname="../analysis"):
+def visualCheck(data_dict,summary_dict,plate_list,save_dirname="../figures"):
     
     for plate_id in plate_list.index:
         

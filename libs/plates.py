@@ -287,6 +287,29 @@ def isASCII(data):
     else:
         return True
 
+def isBIOLOG(filebase):
+    '''
+    check if argument [filename] corresponds to nomenclature of BIOLOG PM plates
+    '''
+
+    if '_' in filebase:
+        split_filebase = filebase.split('_');
+    else:
+        return False
+
+    if not split_filebase[1].startswith('PM'):
+        return False
+
+    # if '-' in filebase:
+    #     split_filebase = filebase.split('-');
+
+    # if split_filebase[-1].isdigit():
+    #     return filebase
+    # else:
+    #     return '%s-1' % filebase
+
+    return True
+
 def listTimePoints(interval,numTimePoints):
     '''
     Constructs a numpy.array of a time series based on time interval length and number of time points
@@ -723,7 +746,11 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
     return fig,axes
 
-def initializePlateKey(plate):
+def initializeMinimalPlateKey(plate):
+
+    
+
+def initializeBiologPlateKey(plate):
     
     isolate,pm = parsePlateName(plate);
     
