@@ -770,7 +770,7 @@ def initializeBiologPlateKey(plate_id):
     
     plate_id = [plate_id]*len(substrate);
     
-    key = pd.DataFrame([wells,plate_id,isolate,substrate],
+    key = pd.DataFrame([wells,plate_id,pm,isolate,rep,substrate],
                       index=['Well','Plate_ID','PM','Isolate','Replicate','Substrate']);
     
     key = key.T
