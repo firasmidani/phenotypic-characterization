@@ -758,20 +758,21 @@ def initializeBiologPlateKey(plate_id):
     
     isolate,pm,rep = parsePlateName(plate_id,simple=False);
     
-    pm = 'PM%s' % pm
+    pmn = 'PM%s' % pm
     
-    biolog = parseBiologLayout().loc[:,pm];
+    biolog = parseBiologLayout().loc[:,pmn];
     
     wells = biolog.index;
     
     substrate = biolog.values;
     
     isolate = [isolate]*len(substrate);
-    
+    pms = [pm]*len(substrate);
+    reps = [rep]*len(substrate);
     plate_id = [plate_id]*len(substrate);
-    
-    key = pd.DataFrame([wells,plate_id,pm,isolate,rep,substrate],
-                      index=['Well','Plate_ID','PM','Isolate','Replicate','Substrate']);
+
+    key = pd.DataFrame([wells,plate_id,isolate,pms,reps,substrate],
+                      index=['Well','Plate_ID','Isolate','PM','Replicate','Substrate']);
     
     key = key.T
 

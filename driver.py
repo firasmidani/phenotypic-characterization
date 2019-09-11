@@ -20,7 +20,7 @@ import pandas as pd
 # IMPORT USER LIBRARIES
 #########################
 
-from libs.plates import breakDownFilePath 
+from libs.plates import breakDownFilePath,initializeBiologPlateKey
 from libs.pipeline import readPlateReaderFolder
 
 ######################################
@@ -156,8 +156,16 @@ for filename in list_data:
         metadata = df_meta[df_meta.Plate_ID==filebase]
         biolog = metadata.PM in range(1,7)
 
-        df_mapping = pd.concat([df_meta[df_meta.Plate_ID==filebase]]*nwells,axis=0)
-        df_mapping.index = data.index;
+        if biolog:
+            isolate = metadata.isolate[0];
+            pm = metadata.PM[0];
+            rep = metadata.Replicate[0];
+
+            filebase = '%s_PM%s-%s' % (isolate,pm,rep);
+            df_mapping = plates.initializeBiologPlateKey(filebase);;
+        else:
+            df_mapping = pd.concat([df_meta[df_meta.Plate_ID==filebase]]*nwells,axis=0)
+            df_mapping.index = data.index;
 
     # if filename follows Biolog nomenclature, create and populate a mapping file accoridngly
     elif isBiolog(filebase):
