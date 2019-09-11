@@ -365,11 +365,11 @@ def parseBiologLayout():
 
     return biolog_layout
 
-def parsePlateName(plate,simple=True):
+def parsePlateName(plate_name,simple=True):
     
-    isolate = str(plate.split('_')[0]);
-    pmn = str(plate.split('PM')[1][0]);
-    rep = [int(key.split('-')[-1]) if '-' in key else 1][0];
+    isolate = str(plate_name.split('_')[0]);
+    pmn = str(plate_name.split('PM')[1][0]);
+    rep = [int(plate_name.split('-')[-1]) if '-' in plate_name else 1][0];
     
     if simple:
         return isolate,pmn
