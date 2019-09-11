@@ -91,7 +91,7 @@ def BOM_to_CSV(filepath,newfile,encoding):
     filepath -- string
     newfile -- new filename (string)
     encoding -- string of encoding (e.g. 'utf-8')
-
+ 
     Returns newfile (stirng)
     '''
 
@@ -360,17 +360,21 @@ def parseBiologLayout():
 
     biolog_layout = pd.DataFrame([bpl.Carbon1,bpl.Carbon2,bpl.PhosphorusAndSulfur,
                                   bpl.PeptideNitrogen1,bpl.PeptideNitrogen2,bpl.PeptideNitrogen3],
-                                 index=['PM1','PM2','PM3','PM4','PM5','PM^'],
+                                 index=['PM1','PM2','PM3','PM4','PM5','PM6'],
                                  columns=parseWellLayout(order_axis=0).index).T
 
     return biolog_layout
 
-def parsePlateName(plate):
+def parsePlateName(plate,simple=True):
     
     isolate = str(plate.split('_')[0]);
-    pm = str(plate.split('PM')[1][0]);
+    pmn = str(plate.split('PM')[1][0]);
+    rep = [int(key.split('-')[-1]) if '-' in key else 1][0];
     
-    return isolate,pm
+    if simple:
+        return isolate,pmn
+    else:
+        return isolate,pmn,rep
 
 def parseWellLayout(order_axis=1):
     '''
@@ -694,7 +698,7 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
         ax.plot(df.columns,df.loc[idx,:],color=color_l,lw=1.5)
         
-        ax.fill_between(x=df.columns,y1=[0]*df.shape[1],y2=df.loc[idx,:],color=color_f)
+        ax.fill_between(x=df.columns,y1=[0]*df.shape[1],y2=df.soc[idx,:],color=color_f)
 
         # show tick labels for bottom left subplot only
         if (rr==nR-1 and cc==0):
@@ -746,13 +750,13 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
     return fig,axes
 
-def initializeMinimalPlateKey(plate):
+#def initializeMinimalPlateKey(plate):
 
     
 
-def initializeBiologPlateKey(plate):
+def initializeBiologPlateKey(plate_id):
     
-    isolate,pm = parsePlateName(plate);
+    isolate,pm,rep = parsePlateName(plate_id,simple=False);
     
     pm = 'PM%s' % pm
     
@@ -764,10 +768,10 @@ def initializeBiologPlateKey(plate):
     
     isolate = [isolate]*len(substrate);
     
-    plate = [plate]*len(substrate);
+    plate_id = [plate_id]*len(substrate);
     
     key = pd.DataFrame([wells,plate,isolate,substrate],
-                      index=['Well','Plate','Isolate','Substrate']);
+                      index=['Well','Plate_ID','PM','Isolate','Replicate','Substrate']);
     
     key = key.T
 

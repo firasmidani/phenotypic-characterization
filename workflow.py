@@ -46,44 +46,60 @@ from libs import classical,growth,pipeline,plates
 # 	4. metatdata
 #	5. configurations
 
+directs = {}
+
 # receive arguments (ERROR CHECK NO ARGUMENT ADDED)
-parentPath = sys.argv[1]; print 'parent path: %s' % parentPath
+directs['parent'] = sys.argv[1]; print 'Parent directory is %s' % directs['parent']
 #biolog = sys.argv[2]; print 'BIOLOG: %s' % biolog
-#mappingPath = sys.argv[3]; print 'mapping path %s' % mappingPath
+#directs['mapping'] = sys.argv[3]; print 'mapping path %s' % directs['mapping']
+# initialize paths
+
+directs['mapping'] = "%s/mapping" % directs['parent']
+directs['data_input'] = '%s/data' % directs['parent']
+directs['data_formatted'] = '%s/data_formatted' % directs['parent']
+directs['data_processed'] = '%s/data_processed' % directs['parent']
 
 ######################
 # CHECK/INIT FOLDERS
 ######################
 
-# initialize directories
-req_folders = ['figures','mapping','results','summary','data_processed','data_formatted']
-for folder in req_folders:
-	plates.createFolder('%s/%s' % (parentPath,folder))
+def initializeDirectory(directs):
 
-# initialize paths
-dataPath = '%s/data' % parentPath
-fmt_dirname = '%s/data_formatted' % parentPath
-proc_dirname = '%s/data_processed' % parentPath
-mappingPath = "%s/mapping" % parentPath
+	# make sure data folder exists
+	if not os.path.exists(directs['parent']):
+		print 'ERROR: No data folder in target directory.'
 
-# ERROR CHECK: check if data is available and provided in the correct location
-if len(os.listdir(dataPath)) == 0:
-	print("WARNING: Data directory is empty")
+	# make sure data folder is not empty
+	elif len(os.listdir(directs['data_input'])) == 0:
+		print("ERROR: Data folder is empty")
+
+	# create necessary folders for analysis and output
+	for folder in ['figures','mapping','results','data_formatted']:
+		plates.createFolder('%s/%s' % (directs['parent'],folder))
+
+	return None
+
+initializeDirectory(directs['parent'])
+
+
+# # ERROR CHECK: check if data is available and provided in the correct location
+# if len(os.listdir(dir_data)) == 0:
+# 	print("WARNING: Data directory is empty")
 
 ##############
 # COPY DATA
 ##############
 
 # copy data files 
-cmd = "cp %s/* %s" % (dataPath,proc_dirname); os.system(cmd)
+#cmd = "cp %s/* %s" % (dir_data,directs['data_processed']); os.system(cmd)
 
 ####################
 # CHECK/INIT FLAGS
 ####################
 
 #check for flags (REPORT BACK whether flags are empty or not, how many plates flagged, how many wells flagged)
-if os.path.exists("%s/mapping/flags.py" % parentPath):
-	sys.path.append("%s/mapping" % parentPath)
+if os.path.exists("%s/mapping/flags.py" % directs['parent']):
+	sys.path.append("%s/mapping" % directs['parent'])
 	from flags import *
 	### CHECK FLAGS FOR DATA FILES ONLY
 
@@ -96,7 +112,7 @@ else:
 # READ DATA
 ##############
 
-data_dict = pipeline.readPlateReaderFolder(folderpath=dataPath,save=True,save_dirname=fmt_dirname)
+data_dict = pipeline.readPlateReaderFolder(folderpath=dir_data,save=True,save_dirname=directs['data_formatted'])
 
 #################
 # READ MAPPING
@@ -104,15 +120,15 @@ data_dict = pipeline.readPlateReaderFolder(folderpath=dataPath,save=True,save_di
 
 # check if
 
-# if os.path.exists(mappingPath):
+# if os.path.exists(directs['mapping']):
 
-# 	mapping_df = pipeline.readPlateReaderMapping('%s/summary/mapping_ribotype.txt' % parentPath,filter_plates=True)
+# 	mapping_df = pipeline.readPlateReaderMapping('%s/summary/mapping_ribotype.txt' % directs['parent'],filter_plates=True)
 # 	plate_list_df = pipeline.expandPlateMapping(data_dict,mapping_df,flagged_plates)
 
 # if biolog:
 
 # 	mapping_df = pipeline.initializePlateMapping(data_dict,flagged_plates)
-# 	mapping_df.to_csv(mappingPath,sep='\t',header=True,index=True)
+# 	mapping_df.to_csv(directs['mapping'],sep='\t',header=True,index=True)
 
 mapping_dict = {}
 
@@ -124,7 +140,7 @@ for filename in data_dict.keys():
 	# ## CHECK FOR BIOLOG FILENAME NOMENCLATURE
 	# if plates.isBIOLOG(filename) is not None:
 
-	mapping_file_path = "%s/%s.txt" % (mappingPath,filename)
+	mapping_file_path = "%s/%s.txt" % (directs['mapping'],filename)
 
 	# if mapping file already exists 
 	if os.path.exists(mapping_file_path):
@@ -171,7 +187,7 @@ for filename in data_dict.keys():
 
 # print
 # print 'READ MAPPING'
-# mapping_df = pipeline.readPlateReaderMapping('%s/summary/mapping_ribotype.txt' % parentPath,filter_plates=True)
+# mapping_df = pipeline.readPlateReaderMapping('%s/summary/mapping_ribotype.txt' % directs['parent'],filter_plates=True)
 # print
 # print 'SELECT PLATES'
 # plate_list_df = pipeline.expandPlateMapping(data_dict,mapping_df,flagged_plates)
@@ -188,7 +204,7 @@ for filename in data_dict.keys():
 # new_data_dict,new_summary_dict = pipeline.preModellingDataFormatting(data_dict,summary_dict,plate_list_df.index)
 # print
 # print 'VISUAL CHEK FOR ABERRANT WELLS OR PLATES'
-# pipeline.visualCheck(new_data_dict,new_summary_dict,plate_list_df,save_dirname='%s/figures' % parentPath)
+# pipeline.visualCheck(new_data_dict,new_summary_dict,plate_list_df,save_dirname='%s/figures' % directs['parent'])
 # print
 # print 'PERFORMING GAUSSIAN PROCESS REGRESSING'
 # new_summary_dict,pred_data_dict = pipeline.modelMultiplePlates(new_data_dict,new_summary_dict,plate_list_df.index)
@@ -199,12 +215,12 @@ for filename in data_dict.keys():
 
 # timestamp = plates.getFormattedTime()
 
-# summary_df.to_csv('%s/summary/summary_%s.txt' % (parentPath,timestamp),
+# summary_df.to_csv('%s/summary/summary_%s.txt' % (directs['parent'],timestamp),
 #     sep='\t',header=True,index=True)
-# data_df.to_csv('%s/summary/data_%s.txt' % (parentPath,timestamp),
+# data_df.to_csv('%s/summary/data_%s.txt' % (directs['parent'],timestamp),
 #     sep='\t',header=True,index=True)
-# pred_data_df.to_csv('%s/summary/pred_%s.txt' % (parentPath,timestamp),
+# pred_data_df.to_csv('%s/summary/pred_%s.txt' % (directs['parent'],timestamp),
 #     sep='\t',header=True,index=True)
 
 #CLEAN_UP
-#cmd = "rm %s/*" % dataPath
+#cmd = "rm %s/*" % dir_data
