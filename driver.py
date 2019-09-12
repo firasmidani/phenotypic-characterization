@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2019-09-10
-# Final date: 2019-09-10
+# Final date: 2019-09-12
 
 # DESCRIPTION driver script for analyzing microbial growth curves
 
@@ -32,6 +32,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i','--input',required=True)
 parser.add_argument('-v','--verbose',action='store_true',default=False)
 
+
+# -f command --> creates flag.txt file
+# -s command --> creates substrate.txt file
+# -h command --> creates hypothesis.txt file
+
+
 args = parser.parse_args();
 
 verbose = args.verbose
@@ -41,9 +47,9 @@ verbose = args.verbose
 ##################
 
 
-DIRECTORY,MAPPING,FILES = {},{},{};
+directory,mapping,files = {},{},{};
 
-def checkDirectoryExists(directory,generic_name='Directory',verbose=False,sys_exit=False,initialize=False):
+def checkdirectoryExists(directory,generic_name='directory',verbose=False,sys_exit=False,initialize=False):
 
     exists = os.path.exists(directory);
 
@@ -73,7 +79,7 @@ def checkDirectoryExists(directory,generic_name='Directory',verbose=False,sys_ex
     else:
         return False
 
-def checkDirectoryNotEmpty(directory,generic_name='Data directory',verbose=verbose):
+def checkdirectoryNotEmpty(directory,generic_name='Data directory',verbose=verbose):
 
     if len(os.listdir(directory)) == 0:
         sys.exit('USER ERROR: %s %s is empty.\n' % (generic_name,directory))
@@ -171,10 +177,10 @@ def subsetWells(df,criteria,verbose=False):
 
     if (len(criteria)==0) and (verbose):
         print 'No subsetting was requested.'
-        return criteria
+        return df
 
     elif len(criteria)==0:
-        return criteria
+        return df
 
     df = df[df.isin(criteria).sum(1)==len(criteria)];
 
@@ -184,7 +190,7 @@ def subsetWells(df,criteria,verbose=False):
 
     return df
 
-def smartMapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
+def smartmapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
 
     if os.path.exists(mapping_path):
 
@@ -196,7 +202,6 @@ def smartMapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
         print '%s: Found meta-data in meta.txt' % (filebase),
 
         metadata = df_meta[df_meta.Plate_ID==filebase] # pd.DataFrame
-
         biolog = plates.isBiologFromMeta(metadata);
 
         if biolog:
@@ -207,7 +212,7 @@ def smartMapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
             df_mapping = plates.initKeyFromMeta(metadata,well_ids)
             print 'and does not seem to be a BIOLOG plate'
 
-    elif plates.isBIOLOG(filebase):
+    elif plates.isBiologFromName(filebase):
 
         df_mapping = plates.initializeBiologPlateKey(filebase)
         print '%s: Did not find file or meta-data but seems to be a BIOLOG plate' % filebase
@@ -222,52 +227,67 @@ def smartMapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
 
     return df_mapping
 
-print 'VERIFYING DIRECTORY STRUCTURE AND USER INPUT'
-DIRECTORY['PARENT'] = args.input;
-DIRECTORY['DATA'] = '%s/data' % DIRECTORY['PARENT']
-DIRECTORY['DERIVED'] = '%s/data_derived' % DIRECTORY['PARENT']
-DIRECTORY['MAPPING'] = '%s/mapping' % DIRECTORY['PARENT']
-DIRECTORY['PARAMETERS'] = '%s/parameters' % DIRECTORY['PARENT']
+##########################################
+print 'VERIFYING directory STRUCTURE AND USER INPUT'
+directory['PARENT'] = args.input;
+directory['DATA'] = '%s/data' % directory['PARENT']
+directory['DERIVED'] = '%s/data_derived' % directory['PARENT']
+directory['mapping'] = '%s/mapping' % directory['PARENT']
+directory['PARAMETERS'] = '%s/parameters' % directory['PARENT']
 
-FILES['META'] = '%s/meta.txt' % DIRECTORY['MAPPING']
-FILES['FLAG'] = '%s/flag.txt' % DIRECTORY['PARAMETERS']
-FILES['HYPO'] = '%s/hypothesis.txt' % DIRECTORY['PARAMETERS']
-FILES['SUBSET'] = '%s/subset.txt' % DIRECTORY['PARAMETERS']
+files['META'] = '%s/meta.txt' % directory['mapping']
+files['FLAG'] = '%s/flag.txt' % directory['PARAMETERS']
+files['HYPO'] = '%s/hypothesis.txt' % directory['PARAMETERS']
+files['SUBSET'] = '%s/subset.txt' % directory['PARAMETERS']
 
-checkDirectoryExists(DIRECTORY['PARENT'],'Input directory',verbose=True,sys_exit=True)
-checkDirectoryExists(DIRECTORY['DATA'],'Data directory',verbose=True)
-checkDirectoryNotEmpty(DIRECTORY['DATA'],'Data directory',verbose)
+checkdirectoryExists(directory['PARENT'],'Input directory',verbose=True,sys_exit=True)
+checkdirectoryExists(directory['DATA'],'Data directory',verbose=True)
+checkdirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
+##############
 
+##########################################
 print 'READING & ASSEMBLING DATA'
-list_data = sorted(os.listdir(DIRECTORY['DATA']));
-DATA = readPlateReaderFolder(folderpath=DIRECTORY['DATA'],save=True,save_dirname=DIRECTORY['DERIVED'])
+list_data = sorted(os.listdir(directory['DATA']));
+data = readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'])
+##########################################
 
+##########################################
 print 'CHECKING FOR META.TXT'
-df_meta, df_meta_plates = checkMetaTxt(FILES['META'],verbose=True)
+df_meta, df_meta_plates = checkMetaTxt(files['META'],verbose=True)
+##########################################
 
-print 'READING & ASSEMBLING MAPPING'
+##########################################
+print 'READING & ASSEMBLING mapping'
 for filename in list_data:
-
     filebase = os.path.splitext(filename)[0];
-    mapping_path = '%s/%s.txt' % (DIRECTORY['MAPPING'],filebase);
-    well_ids = DATA[filebase].index;
-
-    MAPPING[filebase] = smartMapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
+    mapping_path = '%s/%s.txt' % (directory['mapping'],filebase);
+    well_ids = data[filebase].index;
+    mapping[filebase] = smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
+master_mapping = pd.concat(mapping.values(),ignore_index=True,sort=False)
 print 
+##########################################
 
-MASTER_MAPPING = pd.concat(MAPPING.values(),ignore_index=True,sort=False)
-
+##########################################
 print 'REMOVING FLAGGED WELLS'
-flag_dict = checkDictTxt(FILES['FLAG'],verbose=True);
-MASTER_MAPPING = dropFlaggedWells(MASTER_MAPPING,flag_dict,verbose=True)
-MASTER_MAPPING.to_csv('%s/stitched_mapping.txt' % DIRECTORY['MAPPING'],sep='\t',header=True,index=True)
+flag_dict = checkDictTxt(files['FLAG'],verbose=True);
+master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True)
+master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
+##########################################
 
-print 'SUBSETTING BASED ON USER INPUT'
-subset_dict = checkDictTxt(FILES['SUBSET'],verbose=True);
-MASTER_MAPPING = subsetWells(MASTER_MAPPING,subset_dict,verbose=True)
-MASTER_MAPPING.to_csv('%s/stitched_mapping.txt' % DIRECTORY['MAPPING'],sep='\t',header=True,index=True)
-print 
+##########################################
+print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'
+subset_dict = checkDictTxt(files['SUBSET'],verbose=True);
+master_mapping = subsetWells(master_mapping,subset_dict,verbose=True)
+master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
+for pid in data.keys():
+
+    wells = master_mapping[master_mapping.Plate_ID == pid].Well
+    data[pid] = data[pid].loc[wells,:]
+print
+##########################################
+
+
 
 print('\n')
 
