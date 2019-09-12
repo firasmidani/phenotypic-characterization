@@ -20,7 +20,7 @@ import pandas as pd
 # IMPORT USER LIBRARIES
 #########################
 
-from libs.plates import breakDownFilePath,initializeBiologPlateKey
+from libs import plates
 from libs.pipeline import readPlateReaderFolder
 
 ######################################
@@ -41,17 +41,7 @@ verbose = args.verbose
 ##################
 
 
-DIRECTORY,FILES = {},{};
-
-# def checkDirectoryExists(directory,generic_name='Directory',verbose=verbose):
-
-#     if not os.path.exists(directory):
-#         sys.exit('USER ERROR: %s %s does not exist' % (generic_name,directory))
-
-#     elif verbose:
-#         print '%s is %s' % (generic_name,directory)
-
-#     return True
+DIRECTORY,MAPPING,FILES = {},{},{};
 
 def checkDirectoryExists(directory,generic_name='Directory',verbose=False,sys_exit=False,initialize=False):
 
@@ -124,65 +114,62 @@ list_data = sorted(os.listdir(DIRECTORY['DATA']));
 DATA = readPlateReaderFolder(folderpath=DIRECTORY['DATA'],save=True,save_dirname=DIRECTORY['DERIVED'])
 
 # look for meta.txt
-#BOOL_meta = checkDirectoryExists(FILES['MAPPING'],generic_name='Metadata file',verbose=True,initialize=True)
-
-dict_mapping = {};
 BOOL_meta = os.path.exists(FILES['META'])
 #check format of mapping file. Must have PLATE_ID.
 
 # read meta.txt or initialize
 if BOOL_meta:
     df_meta = pd.read_csv(FILES['META'],sep='\t',header=0,index_col=None);
+    df_meta_plates = df_meta.Plate_ID.values;
+
+    print 'Meta-Data is'
     print df_meta
 
 for filename in list_data:
   
-    filebase = os.path.splitext(filename)[0]
+    filebase = os.path.spliext(filename)[0]
     mapping_path = '%s/%s.txt' % (DIRECTORY['MAPPING'],filebase)
 
     data = DATA[filebase];
-    nwells = data.shape[0];
+    well_ids = data.index;
 
-    # if mapping file exists, read it
     if os.path.exists(mapping_path):
    
-        print 'Looking for %s' % mapping_path
-    
+        print 'Reading %s' % mapping_path
         df_mapping = pd.read_csv(mapping_path,sep='\t',header=0,index_col=0);
 
-    # if PLATE_ID is found in meta.txt, create and populate a mapping file using meta.txt info
-    elif filebase in df_meta.Plate_ID.values:
+    elif filebase in df_meta_plates:
 
-        metadata = df_meta[df_meta.Plate_ID==filebase]
-        biolog = metadata.PM in range(1,7)
+        print 'Found Meta-Data for %s in meta.txt' % filebase
+
+        metadata = df_meta[df_meta.Plate_ID==filebase] # pd.DataFrame
+
+        biolog = plates.isBiologFromMeta(metadata);
 
         if biolog:
-            isolate = metadata.isolate[0];
-            pm = metadata.PM[0];
-            rep = metadata.Replicate[0];
-
-            filebase = '%s_PM%s-%s' % (isolate,pm,rep);
-            df_mapping = plates.initializeBiologPlateKey(filebase);;
+            df_mapping = plates.expandBiologMetaData(metadata)
+            print 'and %s seems to be a BIOLOG plate' % filebase
         else:
-            df_mapping = pd.concat([df_meta[df_meta.Plate_ID==filebase]]*nwells,axis=0)
-            df_mapping.index = data.index;
+            df_mapping = plates.initKeyFromMeta(metadata,well_ids)
+            print 'and %s does not seem to be a BIOLOG plate' % filebase
 
-    # if filename follows Biolog nomenclature, create and populate a mapping file accoridngly
-    elif isBiolog(filebase):
+    elif plates.isBIOLOG(filebase):
 
-        # iso,pmn,rep = parsePlateName(filebase,simple=False);
+        print filebase
+        df_mapping = plates.initializeBiologPlateKey(filebase)
 
-        # df_mapping = pd.DataFrame(columns=['Plate_ID','Isolate','PM','Replicate'],
-        #                           index=data.index,
-        #                           data=[filebase,iso,pmn,rep]*nwells);
-        df_mapping = initializeBiologPlateKey(filebase)
+        print 'Did not find file or meta-data but %s seems to be a BIOLOG plate' % filebase
 
-    # otherwise, create a bare-bone mapping file with single column of PLATE_ID
     else:
-        df_mapping = pd.DataFrame(index=data.index,columns=['Plate_ID'],
-                                  data = [filebase]*nwells)
+        df_mapping = pd.DataFrame(index=well_ids,columns=['Plate_ID'],
+                                  data = [filebase]*len(well_ids))
+        
+        print 'Did not find file or meta-data and %s does not seems to be a BIOLOG plate' % filebase
 
-    MAPPING[filebase] = df_mapping
+    MAPPING[filebase] = df_mapping.reset_index(drop=False)
+
+df_mapping = pd.concat(MAPPING.values(),ignore_index=True,sort=False)
+df_mapping.to_csv('%s/stitched_mapping.txt' % DIRECTORY['MAPPING'],sep='\t',header=True,index=True)
 
 print('\n')
 
