@@ -287,7 +287,7 @@ def isASCII(data):
     else:
         return True
 
-def isBIOLOG(filebase):
+def isBiologFromName(filebase):
     '''
     check if argument [filename] corresponds to nomenclature of BIOLOG PM plates
     '''
@@ -751,7 +751,7 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
     return fig,axes
 
-def initializeBiologPlateKey(plate_id):
+def initializeBiologPlateKey(plate_id,simple=False):
 
     list_keys = ['Plate_ID','Isolate','PM','Replicate'];
 
