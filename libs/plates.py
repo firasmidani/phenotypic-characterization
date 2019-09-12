@@ -360,8 +360,9 @@ def parseBiologLayout():
 
     biolog_layout = pd.DataFrame([bpl.Carbon1,bpl.Carbon2,bpl.PhosphorusAndSulfur,
                                   bpl.PeptideNitrogen1,bpl.PeptideNitrogen2,bpl.PeptideNitrogen3],
-                                 index=['PM1','PM2','PM3','PM4','PM5','PM6'],
+                                 index=['1','2','3','4','5','6'],
                                  columns=parseWellLayout(order_axis=0).index).T
+    biolog_layout.columns.name='PM'
 
     return biolog_layout
 
@@ -750,35 +751,86 @@ def plotPositivePlateGrowth(df_od,df_sugars,nCols=4,title="",savefig=0,filepath=
 
     return fig,axes
 
-#def initializeMinimalPlateKey(plate):
-
-    
-
 def initializeBiologPlateKey(plate_id):
-    
-    isolate,pm,rep = parsePlateName(plate_id,simple=False);
-    
-    pmn = 'PM%s' % pm
-    
-    biolog = parseBiologLayout().loc[:,pmn];
-    
-    wells = biolog.index;
-    
-    substrate = biolog.values;
-    
-    isolate = [isolate]*len(substrate);
-    pms = [pm]*len(substrate);
-    reps = [rep]*len(substrate);
-    plate_id = [plate_id]*len(substrate);
 
-    key = pd.DataFrame([wells,plate_id,isolate,pms,reps,substrate],
-                      index=['Well','Plate_ID','Isolate','PM','Replicate','Substrate']);
-    
-    key = key.T
+    list_keys = ['Plate_ID','Isolate','PM','Replicate'];
 
-    key = key.set_index(['Well'])
+    iso,pmn,rep = parsePlateName(plate_id,simple=False);   
+
+    df_meta = pd.DataFrame(index=list_keys,data=[plate_id,iso,pmn,rep]).T
+
+    print df_meta 
+
+    df_mapping = expandBiologMetaData(df_meta)
+
+    return df_mapping
+
+def grabValueFromDF(df,key,fillna=None):
+
+    if key in df.keys():
+        return df.loc[:,key].iloc[0]
+    else:
+        return fillna
+
+def initSubstratesDF(pmn):
+
+    sr = parseBiologLayout().loc[:,str(pmn)];
+    df = pd.DataFrame(sr)
+    df.columns = ['Substrate']
+
+    return df
+
+def initKeyFromMeta(df,well_ids):
+
+    df_meta = pd.concat([df]*len(well_ids));
+    df_meta.index = well_ids
+
+    return df_meta   
+
+def expandBiologMetaData(df):
+
+    pmn = grabValueFromDF(df,'PM')
+
+    df_substrates = initSubstratesDF(pmn);
+
+    df_meta = initKeyFromMeta(df,df_substrates.index)
+
+    df_mapping = df_meta.join(df_substrates)
+
+    return df_mapping
+
+def isBiologFromMeta(df):
+
+    if 'PM' not in df.keys():
+        return False
+    elif df.PM.iloc[0] in range(1,7):
+        return True
+    else:
+        return False
+
+# def initializeBiologPlateKey(plate_id):
     
-    return key
+    # isolate,pm,rep = parsePlateName(plate_id,simple=False);
+        
+    # biolog = parseBiologLayout().loc[:,pmn];
+    
+    # wells = biolog.index;
+    
+    # substrate = biolog.values;
+    
+    # isolate = [isolate]*len(substrate);
+    # pms = [pm]*len(substrate);
+    # reps = [rep]*len(substrate);
+    # plate_id = [plate_id]*len(substrate);
+
+    # key = pd.DataFrame([wells,plate_id,isolate,pms,reps,substrate],
+    #                   index=['Well','Plate_ID','Isolate','PM','Replicate','Substrate']);
+    
+    # key = key.T
+
+    # key = key.set_index(['Well'])
+    
+    # return key
 
 def subPlotSplit(df,nCols=4):
     ''' 
