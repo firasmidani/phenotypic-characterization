@@ -757,7 +757,7 @@ def initializeBiologPlateKey(plate_id):
 
     iso,pmn,rep = parsePlateName(plate_id,simple=False);   
 
-    df_meta = pd.DataFrame(index=list_keys,data=[plate_id,iso,pmn,rep]).T
+    df_meta = pd.DataFrame(index=list_keys,data=[plate_id,iso,int(pmn),int(rep)]).T
 
     df_mapping = expandBiologMetaData(df_meta)
 
