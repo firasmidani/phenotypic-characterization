@@ -889,19 +889,26 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
 
     df = pd.read_csv(filepath,sep='\t',header=None,index_col=index_col,skiprows=skiprows);
 
-    df.columns = listTimePoints(interval,df.shape[1])
+    df.columns = listTimePoints(interval=interval,numTimePoints=df.shape[1])
 
     if index_col==None:
         df.index = parseWellLayout(order_axis=0).index.values
 
-    df.index.name = 'Well'
-    df.T.index.name = 'Time'
+    df.index.name = 'Well';
+    df.T.index.name = 'Time';
 
     # this makes sure to grab only rows that begin with well ids
-    df = df.loc[parseWellLayout(order_axis=1).index]
+    df = df.loc[parseWellLayout(order_axis=1).index];
+
+    # remove columns (time points) with only NA values
+    df = df.iloc[:,np.where(~df.isna().all(0))[0]];
+    df = df.astype(float);
+
+    # format is now time-point by well where each value is OD except for first column, it's time
+    df = df.T.reset_index(drop=False);
 
     if save:
-        df.to_csv(newfile, sep='\t')
+        df.to_csv(newfile, sep='\t',header=True) # does not save header index name (i.e. Time)
 
     return df
 

@@ -39,12 +39,24 @@ def readPlateReaderFolder(folderpath,save=False,save_dirname='../data_formatted'
 
     for filepath in sorted(filepaths):
 
-        _, filebase, _ = plates.breakDownFilePath(filepath);
+        _, filebase, newfile = plates.breakDownFilePath(filepath,save_dirname);
 
+        #df = plates.readPlateReaderData(filepath,save=save,save_dirname=save_dirname);
         df = plates.readPlateReaderData(filepath,save=save,save_dirname=save_dirname);
-        df = plates.readPlateReaderData(filepath,save=save,save_dirname=save_dirname);
+        #df = formatPlateData(df,interval=interval);
+        #df = df.T.reset_index(drop=False); # now we can reset index to a random number 
         
-        df_dict[filebase] = formatPlateData(df,interval=interval);
+        # Time A1 A2 ... H12
+        # 0 0.1 0.102 ... 0.09 
+        # ...
+        # 6000 1.1 1.05 ... 1.0
+
+        df_dict[filebase] = df;
+
+        print df.head()
+
+        if save:
+            df.to_csv(newfile, sep='\t',header=True) # does not save header index name (i.e. Time)
 
     return df_dict
 
@@ -116,6 +128,11 @@ def formatPlateData(df,interval=600):
     # remove columns (time points) with only NA vlaues
     df = df.iloc[:,np.where(~df.isna().all(0))[0]]
     df = df.astype(float)
+
+    # overrides time to intervals of 600
+    # sets index names to Well and Time respectively
+    # gets raid of NA values
+    # confirms that it is float
 
     return df
 

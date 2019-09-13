@@ -335,6 +335,47 @@ class GrowthData(object):
        
         return fig,ax
 
+    def basicSummary(self):
+
+        min_v = self.data.min()[0];
+        max_v = self.data.max()[0];
+        baseline_v = self.data.iloc[0,0];
+
+        summ_df = pd.DataFrame(index=self.key.index,columns=['Min','Max','Base'])
+        summ_df.loc[self.key.index,:] = [min_v,max_v,baseline_v]
+
+        self.key = self.key.join(summ_df)
+
+    def convertTimeUnits(self,input='seconds',output='hours'):
+        '''Convert time array (column) from units of seconds to hours
+        '''
+        
+        if (input=='seconds') and (output=='hours'):
+
+            factor = 1.0/3600
+
+        elif (input=='seconds') and (output=='minutes'):
+
+            factor = 1.0/60
+
+        elif (input=='minutes') and (output=='hours'):
+
+            factor = 1.0/60
+
+        elif (input=='minutes') and (output=='seconds'):
+
+            factor = 60
+
+        elif (input=='hours') and (output=='minutes'):
+
+            factor = 60
+
+        elif (input=='hours') and (output=='seconds'):
+
+            factor = 3600
+
+        self.time = self.time.astype(float) * factor   
+
     def logData(self):
         '''
         natural logarithm transform 
@@ -558,8 +599,8 @@ class GrowthMetrics(object):
         #K,r,d,v,y0 = self.params
         
         #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
-        self.pred = np.array([classical_model(xx,*self.params) for xx in x]);
-        self.key['classical_max'] = np.max(self.pred)
+        self.pred = npd.DataFrame(np.array([classical_model(xx,*self.params) for xx in x]),columns=['OD'])
+        self.key['classical_max'] = np.max(self.pred.values)
 
     def predictGP(self):
         '''Predict OD using GP regression'''
@@ -567,8 +608,8 @@ class GrowthMetrics(object):
         
         #K,r,d,v,y0 = self.params
         
-        self.pred = np.ravel(self.gp_model.predict(x)[0])
-        self.key['GP_max'] = np.max(self.pred)
+        self.pred = pd.DataFrame(np.ravel(self.gp_model.predict(x)[0]),columns=['OD'])
+        self.key['GP_max'] = np.max(self.pred.values)
                
     def plot(self,ax_arg=None):
         
@@ -583,7 +624,7 @@ class GrowthMetrics(object):
         ax.set_xlabel('Time',fontsize=20);
         ax.set_ylabel('Optical Density',fontsize=20);
         
-        ax.set_title(self.key.Substrate[0],fontsize=20);
+        #ax.set_title(self.key.Substrate[0],fontsize=20);
         
         if not ax_arg:
             return fig,ax  
