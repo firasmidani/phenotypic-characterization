@@ -16,11 +16,13 @@ import sys
 import argparse
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
 #########################
 # IMPORT USER LIBRARIES
 #########################
 
-from libs import plates
+from libs import plates,growth
 from libs.pipeline import readPlateReaderFolder
 
 ######################################
@@ -32,10 +34,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i','--input',required=True)
 parser.add_argument('-v','--verbose',action='store_true',default=False)
 
+#parser.add_argument('-f','--flag',required=False)
+#parser.add_argument('-s','--subset',required=False)
+#parser.add_argument('-H','--hypothesis',required=False)
+#parser.add_argument('-m','--merge-results',required=False)
 
-# -f command --> creates flag.txt file
-# -s command --> creates substrate.txt file
-# -h command --> creates hypothesis.txt file
+# --plot-plates (only plot plate to visualize for any odd things)
+# --plot-wells (plot each desired well)
+# --plot-only
+
+# --no-flags
+# --no-subsets
+
 
 
 args = parser.parse_args();
@@ -45,7 +55,6 @@ verbose = args.verbose
 ##################
 # PROCESS INPUTS
 ##################
-
 
 directory,mapping,files = {},{},{};
 
@@ -227,18 +236,68 @@ def smartmapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
 
     return df_mapping
 
+def meltData(df,plate_id):
+    '''
+    no index columns
+    first column is wells 
+    rest of header is time-points so ['Well',0,600,...]
+    values are numeric
+    '''
+
+    #df.T.index.name = 'Time'
+
+    #if df.index.name == 'Well':
+    #    df = df.reset_index();
+
+    #df = pd.melt(df,id_vars='Well',value_name='OD');
+    df = df.melt(id_vars='Time',var_name='Well',value_name='OD')
+    df.Time = df.Time.astype(float);
+    df.loc[:,'Plate_ID'] = [plate_id]*df.shape[0];
+
+    # Well Time OD Plate_ID
+    # ...
+
+    # one plate is 96 wells x 100 time points = 9,600 rows x 4 columns 
+
+    return df
+
+def grabCurve(df,Well_ID,Plate_ID):
+
+    criteria = {'Well':[Well_ID],'Plate_ID':[Plate_ID]};
+    df = df[df.isin(criteria).sum(1)==2];
+    df = df.sort_values(['Plate_ID','Well','Time']);
+
+    #df_time = df.Time;
+    #df_OD = df.OD;
+
+    return df
+
+def grabVariable(df,varb):
+
+    return pd.DataFrame(df.loc[:,varb])
+
+def packGrowthData(df,key):
+    
+    time = grabVariable(df,'Time')
+    od = grabVariable(df,'OD') 
+
+    return growth.GrowthData(time,od,key)
+
 ##########################################
 print 'VERIFYING directory STRUCTURE AND USER INPUT'
 directory['PARENT'] = args.input;
 directory['DATA'] = '%s/data' % directory['PARENT']
 directory['DERIVED'] = '%s/data_derived' % directory['PARENT']
-directory['mapping'] = '%s/mapping' % directory['PARENT']
+directory['MAPPING'] = '%s/mapping' % directory['PARENT']
+directory['SUMMARY'] = '%s/summary' % directory['PARENT']
 directory['PARAMETERS'] = '%s/parameters' % directory['PARENT']
+directory['FIGURES'] = '%s/figures' % directory['PARENT']
 
-files['META'] = '%s/meta.txt' % directory['mapping']
+files['META'] = '%s/meta.txt' % directory['MAPPING']
 files['FLAG'] = '%s/flag.txt' % directory['PARAMETERS']
 files['HYPO'] = '%s/hypothesis.txt' % directory['PARAMETERS']
 files['SUBSET'] = '%s/subset.txt' % directory['PARAMETERS']
+files['INTERVAL'] = '%s/interval.txt' % directory['PARAMETERS']
 
 checkdirectoryExists(directory['PARENT'],'Input directory',verbose=True,sys_exit=True)
 checkdirectoryExists(directory['DATA'],'Data directory',verbose=True)
@@ -248,7 +307,8 @@ checkdirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
 ##########################################
 print 'READING & ASSEMBLING DATA'
 list_data = sorted(os.listdir(directory['DATA']));
-data = readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'])
+interval_dict = checkDictTxt(files['INTERVAL'],verbose=True); print interval_dict
+data = readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],interval=600,interval_dict=interval_dict)
 ##########################################
 
 ##########################################
@@ -260,32 +320,154 @@ df_meta, df_meta_plates = checkMetaTxt(files['META'],verbose=True)
 print 'READING & ASSEMBLING mapping'
 for filename in list_data:
     filebase = os.path.splitext(filename)[0];
-    mapping_path = '%s/%s.txt' % (directory['mapping'],filebase);
-    well_ids = data[filebase].index;
+    mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase);
+    well_ids = data[filebase].columns[1:];
     mapping[filebase] = smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
 master_mapping = pd.concat(mapping.values(),ignore_index=True,sort=False)
 print 
+
 ##########################################
+
+# plot_plates = True
+# if plot_plates:
+#     for pid in data.keys():
+#         print data[pid].head()
+#         filepath = '%s/%s.pdf' % (directory['FIGURES'],pid)
+#         data[pid].Time = data[pid].
+#         #growth.GrowthPlate(data[pid]).plot(title="",savefig=False,filepath="")
+#         print mapping[pid]
+
+# sys.exit('DONE')
 
 ##########################################
 print 'REMOVING FLAGGED WELLS'
 flag_dict = checkDictTxt(files['FLAG'],verbose=True);
 master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True)
-master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
+#master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
+
 ##########################################
 
 ##########################################
 print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'
 subset_dict = checkDictTxt(files['SUBSET'],verbose=True);
-master_mapping = subsetWells(master_mapping,subset_dict,verbose=True)
-master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
-for pid in data.keys():
+master_mapping = subsetWells(master_mapping,subset_dict,verbose=True); print master_mapping
 
-    wells = master_mapping[master_mapping.Plate_ID == pid].Well
-    data[pid] = data[pid].loc[wells,:]
+sub_data,sub_key = {},{}
+sub_gdata,sub_gkey = {},{}
+
+for pid in data.keys():
+    print pid
+    # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
+    # can be used for GrowthData as key
+    sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
+    if sub_mapping.shape[0] > 0:
+        
+        wells = list(sub_mapping.Well.values)
+        
+        df_pid = data[pid].loc[:,['Time'] + wells]; # same format; just removing wells/rows
+        df_pid_melt = meltData(df_pid,pid); # 
+
+        sub_gdata[pid] = df_pid;
+        sub_data[pid] = df_pid_melt;
+
+        sub_key[pid] = sub_mapping;
+
+        #print df_pid.shape, sub_mapping.shape
+        #gdata = growth.GrowthPlate(data=df_pid,key=sub_mapping);
+        #print gdata
+        #print df_pid.head(),sub_mapping.head()
+
+print 
+master_data = pd.concat(sub_data.values(),sort=False).reset_index();
+master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',header=True,index=False)
+
+gdata_input = reduce(lambda left,right: pd.merge(left,right,on='Time',how='outer'),sub_gdata.values())
+gdata_time = gdata_input.loc[:,'Time']; print gdata_time.shape
+gdata_input = gdata_input.drop('Time',axis=1).T.reset_index(drop=True).T
+
+print gdata_input.iloc[range(90,99),:]
+print gdata_time.iloc[range(900,99)]
+print pd.concat(sub_key.values()).reset_index(drop=True)
+
+gdata = growth.GrowthPlate(data=gdata_input,
+                           key=pd.concat(sub_key.values()).reset_index(drop=True),
+                           time=gdata_time);
+print gdata
+print gdata.data.shape
+print gdata.key.shape
+print gdata.data.head(10)
+print gdata.key.head(10)
+
 print
 ##########################################
+
+##########################################
+
+key_list = [];
+od_list = [];
+
+for _,sample in master_mapping.iterrows():
+
+    Well_ID, Plate_ID = sample[['Well','Plate_ID']];
+    
+    # initialize data and key
+    sample_data = grabCurve(master_data,Well_ID,Plate_ID);
+    sample_key = pd.DataFrame([Well_ID,Plate_ID],index=['Well','Plate_ID']).T
+
+    # package into GrwothData object
+    curve = packGrowthData(sample_data,sample_key)
+
+    # basic summary: min, max, and T0
+    curve.basicSummary()
+
+    # convert time from seconds to hours, base-10 log-transform OD, and subtract T0
+    curve.convertTimeUnits()
+    curve.logData()
+    curve.subtractBaseline()
+
+    # apply GP model fitting, infer growth parameters, and predict OD
+    curve_fit = growth.GrowthMetrics(curve);
+    curve_fit.fitGP();
+    curve_fit.inferGPDynamics();
+    curve_fit.inferDoublingTime(mtype='GP');
+    curve_fit.predictGP();
+
+    print curve_fit.key.head()
+
+    curve_output = pd.concat([curve_fit.time,curve.input_data,curve_fit.data,curve_fit.pred],axis=1)
+    curve_output.columns = ['Time','OD_input','OD_cleaned','OD_predicted']
+    
+    well_id = curve_fit.key.loc[:,['Well','Plate_ID']].values
+    well_id_df = pd.DataFrame(index=curve_output.index,columns=['Well','Plate_ID']);
+    well_id_df.loc[:,['Well','Plate_ID']] = [well_id]*curve_output.shape[0]
+
+    curve_output = well_id_df.join(curve_output)
+
+    key_list.append(curve_fit.key)
+    od_list.append(curve_output)
+    #pred_list.append(curve_fit.pred)
+
+#     fig,ax = curve_fit.plot()
+#     plt.savefig('/Users/firasmidani/Downloads/20190911/%s_%s.pdf' % (Plate_ID,Well_ID),filetype='pdf')
+
+sys.exit('~~~DONE~~~')
+
+
+key_list = pd.concat(key_list)
+key_list.to_csv('%s/stitched_key_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
+
+od_list = pd.concat(od_list)
+od_list.to_csv('%s/stitched_od_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
+
+##########################################
+
+# do i combine all data (melt it too) ? 
+# do i run each plate separately ? 
+# do i save all data results together ? 
+
+# I should analyze all seperately but have the option to merge all results!
+
 
 
 

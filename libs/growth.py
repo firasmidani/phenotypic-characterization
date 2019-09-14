@@ -137,7 +137,7 @@ class GrowthPlate(object):
         time (pd.DataFrame): n by 1 DataFrame (for n timepoints) that stores the raw time points
         '''
         
-        data = data.copy().sort_values(['Time'],ascending=True);
+        #data = data.copy().sort_values(['Time'],ascending=True);
 
         self.key = key.copy();
         self.control = control;
@@ -156,8 +156,8 @@ class GrowthPlate(object):
         self.mods = self.mods.apply(lambda x: False);
 
         assert type(key) == pd.DataFrame, "key must be a pandas dataframe"
-        assert data.columns[0]=='Time', "first data column must be Time"
-        assert (data.shape[1]-1) == (key.shape[0]), "key must contain metadata for each sample"
+        #assert data.columns[0]=='Time', "first data column must be Time"
+        assert (data.shape[1]) == (key.shape[0]), "key must contain metadata for each sample"
         
     #enddef 
 
