@@ -299,17 +299,13 @@ class GrowthPlate(object):
         
         sub_mods = self.mods
 
-        if unmodified:
+        sub_input_data = self.input_data.loc[:,sub_key_idx];
+        sub_input_time = self.input_time;
 
-            sub_data = self.input_data.loc[:,sub_key_idx];
-            sub_time = self.input_time;
+        sub_data = self.data.loc[:,sub_key_idx];
+        sub_time = self.time;
 
-        else:
-
-            sub_data = self.data.loc[:,sub_key_idx];
-            sub_time = self.time;
-
-        return GrowthData(sub_time,sub_data,sub_key,sub_mods)
+        return GrowthData(sub_time,sub_data,sub_key,sub_mods,sub_input_data,sub_input_time)
 
     def plot(self,title="",savefig=False,filepath=""):
         '''
@@ -327,7 +323,7 @@ class GrowthPlate(object):
 
 class GrowthData(object):
     
-    def __init__(self,time=None,data=None,key=None,mods=None):
+    def __init__(self,time=None,data=None,key=None,mods=None,input_data=None,input_time=None):
         
         '''
         Data structure for handling growth data for a single sample
@@ -343,8 +339,8 @@ class GrowthData(object):
         self.time = time.copy();
         self.data = data.copy();
 
-        self.input_time = time.copy();
-        self.input_data = data.copy();
+        self.input_time = input_time.copy();
+        self.input_data = input_data.copy();
 
         self.key = key.copy();
 
@@ -380,17 +376,6 @@ class GrowthData(object):
             ax.set_title(self.key.Substrate[0],fontsize=20);
        
         return fig,ax
-
-    def basicSummary(self):
-
-        min_v = self.data.min()[0];
-        max_v = self.data.max()[0];
-        baseline_v = self.data.iloc[0,0];
-
-        summ_df = pd.DataFrame(index=self.key.index,columns=['Min','Max','Base'])
-        summ_df.loc[self.key.index,:] = [min_v,max_v,baseline_v]
-
-        self.key = self.key.join(summ_df)
 
     def convertTimeUnits(self,input='seconds',output='hours'):
         '''Convert time array (column) from units of seconds to hours
@@ -476,11 +461,30 @@ class GrowthMetrics(object):
 
         self.time = growth.time.copy();
         self.data = growth.data.copy();
+
+        self.input_time = growth.input_time.copy();
+        self.input_data = growth.input_data.copy();
         
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
         self.classical_model = classical_model;
         self.gp_model = None;
+    
+    def basicSummary(self,unmodified=False):
+
+        if unmodified: 
+            data = np.ravel(self.input_data.values)
+        else:
+            data = np.ravel(self.data.values)
+        
+        min_v = np.min(data);#[0];
+        max_v = np.max(data);#[0];
+        baseline_v = data[0];
+
+        summ_df = pd.DataFrame(index=self.key.index,columns=['Min','Max','Base'])
+        summ_df.loc[self.key.index,:] = [min_v,max_v,baseline_v]
+
+        self.key = self.key.join(summ_df)
 
     def findDiauxicShifts(self):
         '''
