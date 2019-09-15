@@ -361,9 +361,10 @@ sub_data,sub_key = {},{}
 sub_gdata,sub_gkey = {},{}
 
 for pid in data.keys():
-    #print pid
+
     # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
     # can be used for GrowthData as key
+    
     sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
     if sub_mapping.shape[0] > 0:
         
@@ -383,11 +384,18 @@ print
 master_data = pd.concat(sub_data.values(),sort=False).reset_index()
 master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',header=True,index=False)
 
-gdata_input = reduce(lambda left,right: pd.merge(left,right,on='Time',how='outer'),sub_gdata.values())
-gdata_input = gdata_input.sort_values(['Time']).reset_index(drop=True);
-gdata_input.columns = ['Time']+range(gdata_input.shape[1]-1)
-gdata_key = pd.concat(sub_key.values()).reset_index(drop=True)
+def packageGrowthPlate(sub_gdata,sub_key):
 
+    ## ll is short for left and rr is short for right
+    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),sub_gdata.values());
+    gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
+    gplate_data.columns = ['Time'] + range(gplate_data.shape[1]-1);
+    gplate_key = pd.concat(sub_key.values()).reset_index(drop=True);
+
+    gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
+
+    return gplate
+    
 ##########################################
 
 ##########################################
@@ -396,19 +404,20 @@ hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dic
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 ##########################################
-gdata = growth.GrowthPlate(data=gdata_input,key=gdata_key)
-gdata.convertTimeUnits()
-gdata.logData()
-gdata.subtractBaseline()
 
-gdata.runTestGP(hypothesis=hypo_dict)
 
-joint_df = pd.melt(gdata_input,id_vars='Time',var_name='Sample_ID',value_name='OD')
-joint_df = joint_df.merge(gdata_key,on='Sample_ID')
-joint_df = joint_df.loc[:,['OD']+hypo_dict['H1']]
-joint_df = joint_df.sort_values('Time').reset_index(drop=True)
+if len(hypo_dict) > 0 :
+    #gplate = growth.GrowthPlate(data=gdata_input,key=gdata_key)
+    gplate = packageGrowthPlate(sub_gdata,sub_key)
+    gplate.convertTimeUnits()
+    gplate.logData()
+    gplate.subtractBaseline()
 
-sys.exit('~~~DONE~~~')
+    gplate.runTestGP(hypothesis=hypo_dict)
+
+    sys.exit('~~~DONE~~~')
+
+#sys.exit('~~~DONE~~~')
 
 ##########################################
 
