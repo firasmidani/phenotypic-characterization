@@ -658,7 +658,7 @@ class GrowthMetrics(object):
         
         #K,r,d,v,y0 = self.params
         
-        self.pred = pd.DataFrame(np.ravel(self.gp_model.predict(x)[0]),columns=['OD'])
+        self.pred = pd.DataFrame(np.ravel(self.gp_model.predict(x)[0]))#,columns=['OD'])
         self.key['GP_max'] = np.max(self.pred.values)
                
     def plot(self,ax_arg=None):

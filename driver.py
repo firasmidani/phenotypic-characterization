@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2019-09-10
-# Final date: 2019-09-12
+# Final date: 2019-09-15
 
 # DESCRIPTION driver script for analyzing microbial growth curves
 
@@ -45,8 +45,6 @@ parser.add_argument('-v','--verbose',action='store_true',default=False)
 
 # --no-flags
 # --no-subsets
-
-
 
 args = parser.parse_args();
 
@@ -183,6 +181,7 @@ def dropFlaggedWells(df,flags,verbose=False):
     return df
 
 def subsetWells(df,criteria,verbose=False):
+    ''' subsets form mapping file'''
 
     if (len(criteria)==0) and (verbose):
         print 'No subsetting was requested.'
@@ -283,6 +282,46 @@ def packGrowthData(df,key):
 
     return growth.GrowthData(time,od,key)
 
+def subsetCombineData(data,master_mapping):
+
+    wide_data_dict = {}
+    key_dict= {}
+
+    # for each plate_id
+    for pid in data.keys():
+
+        # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
+        # can be used for GrowthData as key
+        
+        # grab all wells and their info
+        sub_mapping_df = master_mapping[master_mapping.Plate_ID == pid]; 
+
+        # only continue if mapping is not empty
+        if sub_mapping_df.shape[0] > 0:
+            
+            # list all well IDs (usually A1 through H12)
+            wells = list(sub_mapping_df.Well.values)
+            
+            # recall that data[pid] is time (p) x wells (n)
+            # so here you are selecting for wells in sub_mapping
+            key_dict[pid] = sub_mapping_df;
+            wide_data_dict[pid] = data[pid].loc[:,['Time'] + wells]; 
+
+    return wide_data_dict,key_dict
+
+def packageGrowthPlate(data_dict,key_dict):
+
+    ## ll is short for left and rr is short for right
+    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),data_dict.values());
+    gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
+    gplate_data.columns = ['Time'] + range(gplate_data.shape[1]-1);
+    gplate_key = pd.concat(key_dict.values()).reset_index(drop=True);
+
+    gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
+
+    return gplate
+
+
 ##########################################
 print 'VERIFYING directory STRUCTURE AND USER INPUT'
 directory['PARENT'] = args.input;
@@ -339,13 +378,20 @@ print
 
 # sys.exit('DONE')
 
+
+##########################################
+print 'READING HYPOTHESIS'
+hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+');
+#master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
+print
+##########################################
+
 ##########################################
 print 'REMOVING FLAGGED WELLS'
 flag_dict = checkDictTxt(files['FLAG'],verbose=True);
-master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True)
+master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True);
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
-
 ##########################################
 
 ##########################################
@@ -354,75 +400,13 @@ subset_dict = checkDictTxt(files['SUBSET'],verbose=True);
 master_mapping = subsetWells(master_mapping,subset_dict,verbose=True).reset_index(drop=True)#; 
 master_mapping.index.name='Sample_ID';
 master_mapping = master_mapping.reset_index(drop=False);
+wide_data_dict,key_dict = subsetCombineData(data,master_mapping)
+gplate = packageGrowthPlate(wide_data_dict,key_dict)
 print
 print master_mapping
-
-def subsetData(data,master_mapping):
-
-    tidy_data,wide_data = {},{}
-    sub_key = {}
-
-    # for each plate_id
-    for pid in data.keys():
-
-        # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
-        # can be used for GrowthData as key
-        
-        # grab all wells and their info
-        sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
-
-        # only continue if mapping is not empty
-        if sub_mapping.shape[0] > 0:
-            
-            # list all well IDs (usually A1 through H12)
-            wells = list(sub_mapping.Well.values)
-            
-            # recall that data[pid] is time (p) x wells (n)
-            # so here you are selecting for wells in sub_mapping
-            df_pid = data[pid].loc[:,['Time'] + wells]; # same format; just removing wells/rows
-            
-            # melt data so that headers are ['Well','Time','OD','Plate_ID']
-            # there would be nxt rows, b/c number of wells (n) x number of time points (t)
-            df_pid_melt = meltData(df_pid,pid); # 
-
-            # save in a dictionary
-            wide_data[pid] = df_pid; #sub_gdata[pid] = df_pid;
-            tidy_data[pid] = df_pid_melt; # tidy_data[pid] = df_pid_melt;
-
-            sub_key[pid] = sub_mapping;
-
-    return wide_data,tidy_data,sub_key
-
-wide_data,tidy_data,sub_key = subsetData(data,master_mapping)
-
-print 
-master_data = pd.concat(tidy_data.values(),sort=False).reset_index()
-master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',header=True,index=False)
-
-def packageGrowthPlate(data_dict,key_dict):
-
-    ## ll is short for left and rr is short for right
-    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),data_dict.values());
-    gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
-    gplate_data.columns = ['Time'] + range(gplate_data.shape[1]-1);
-    gplate_key = pd.concat(key_dict.values()).reset_index(drop=True);
-
-    gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
-
-    return gplate
-
 ##########################################
 
 ##########################################
-print 'READING HYPOTHESIS'
-hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
-#master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
-print
-
-##########################################
-#gplate = growth.GrowthPlate(data=gdata_input,key=gdata_key)
-gplate = packageGrowthPlate(wide_data,sub_key)
-
 gplate.convertTimeUnits()
 gplate.logData()
 gplate.subtractBaseline()
@@ -444,6 +428,7 @@ for sample_id in sorted(master_mapping.Sample_ID.unique()):
     sample_metrics.inferDoublingTime(mtype='GP');
     sample_metrics.predictGP()
 
+    # input_time is in seconds, time used is in hours for analysis but not output
     sample_output = pd.concat([sample_metrics.time,
                                sample_metrics.input_data,
                                sample_metrics.data,
