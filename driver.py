@@ -386,38 +386,16 @@ master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',
 gdata_input = reduce(lambda left,right: pd.merge(left,right,on='Time',how='outer'),sub_gdata.values())
 gdata_input = gdata_input.sort_values(['Time']).reset_index(drop=True);
 gdata_input.columns = ['Time']+range(gdata_input.shape[1]-1)
-#gdata_time = gdata_input.loc[:,'Time']; print gdata_time.shape;
-#gdata_input = gdata_input.drop('Time',axis=1).T.reset_index(drop=True).T;
+gdata_key = pd.concat(sub_key.values()).reset_index(drop=True)
 
-# print gdata_input.head()
-# print
-# print gdata_input.tail()
-# print
-# print gdata_time.head()
-# print
-# print gdata_time.tail()
-# print
-# print pd.concat(sub_key.values()).reset_index(drop=True)
-
-# gdata = growth.GrowthPlate(data=gdata_input,
-#                            key=pd.concat(sub_key.values()).reset_index(drop=True),
-#                            time=gdata_time);
-# print gdata
-# print gdata.data.shape
-# print gdata.key.shape
-#print gdata.data.head(10)
-# print gdata.key.head(10)
 ##########################################
 
 ##########################################
 print 'READING HYPOTHESIS'
 hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
-#master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True)
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 ##########################################
-gdata_key = pd.concat(sub_key.values()).reset_index(drop=True)
-
 gdata = growth.GrowthPlate(data=gdata_input,key=gdata_key)
 gdata.convertTimeUnits()
 gdata.logData()
@@ -429,10 +407,6 @@ joint_df = pd.melt(gdata_input,id_vars='Time',var_name='Sample_ID',value_name='O
 joint_df = joint_df.merge(gdata_key,on='Sample_ID')
 joint_df = joint_df.loc[:,['OD']+hypo_dict['H1']]
 joint_df = joint_df.sort_values('Time').reset_index(drop=True)
-
-#print joint_df.head()
-#print joint_df.shape
-#print joint_df.tail()
 
 sys.exit('~~~DONE~~~')
 
