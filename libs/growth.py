@@ -116,6 +116,31 @@ def gpDerivative(x,gp):
     
     return mu,mult*cov   
 
+def computeLikelihood(df,varbs):
+    '''
+    df pd.DataFrame with at least two columns Time and OD and additional columns
+    varbs to include in hypothesis (should include Time)
+    '''
+
+    df = df.loc[:,['OD']+varbs]
+    df = df.sort_values('Time').reset_index(drop=True)
+
+    for varb in varbs: #hypothesis['H1']:
+
+        if varb == 'Time':
+            continue
+        else: 
+            df.loc[:,varb] = pd.factorize(df.loc[:,varb])[0]
+
+    y = pd.DataFrame(df.OD)
+    x = df.drop('OD',axis=1).values
+
+    k = GPy.kern.RBF(x.shape[1],ARD=True)
+    m = GPy.models.GPRegression(x,y,k); m.optimize()
+    
+    return m.log_likelihood();
+
+
 # BEGIN FRAMEWORK
 
 class GrowthPlate(object):
@@ -156,10 +181,31 @@ class GrowthPlate(object):
         self.mods = self.mods.apply(lambda x: False);
 
         assert type(key) == pd.DataFrame, "key must be a pandas dataframe"
-        #assert data.columns[0]=='Time', "first data column must be Time"
-        assert (data.shape[1]) == (key.shape[0]), "key must contain metadata for each sample"
+        assert data.columns[0]=='Time', "first data column must be Time"
+        assert (data.shape[1]-1) == (key.shape[0]), "key must contain metadata for each sample"
         
     #enddef 
+
+    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']}):
+
+        joint_df = self.time.join(self.data)
+        
+        joint_df = pd.melt(joint_df,id_vars='Time',var_name='Sample_ID',value_name='OD')
+        joint_df = joint_df.merge(self.key,on='Sample_ID');
+
+        # melts data frame such as each row is a single measurement
+        # columns include at leat 'Sample_ID' (i.e. specific well in specific palte) and
+        #   'Time' and 'OD'. Additional columns can be explicitly called by user 
+        #   using hypothesis argument
+
+        L1 = computeLikelihood(joint_df,hypothesis['H1']);
+        L0 = computeLikelihood(joint_df,hypothesis['H0']);
+
+        logBF = L1 - L0;
+
+        print 'log(BF) is %0.3f' % logBF
+
+        return logBF
 
     def logData(self):
         '''Transform with a natural logarithm all data points'''
@@ -469,7 +515,7 @@ class GrowthMetrics(object):
         except:
         	self.classical_model = classical_model;
         	self.params = [np.nan,np.nan,np.nan,0.1,y[0]]
-       
+
     def fitGP(self):
         '''Fit a Gaussian Process Regression model'''
         x = self.time; 
