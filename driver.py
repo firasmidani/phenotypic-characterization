@@ -138,7 +138,7 @@ def checkMetaTxt(path,verbose=False):
 
     return df_meta,df_meta_plates
 
-def checkDictTxt(path,verbose=False):
+def checkDictTxt(path,verbose=False,spliton=','):
 
     exists = os.path.exists(path);
 
@@ -151,7 +151,7 @@ def checkDictTxt(path,verbose=False):
         for line in fid:
 
             key,values = line.split(':');
-            values = values.strip('\n').split(',');
+            values = values.strip('\n').split(spliton);
             values = [ii.strip() for ii in values];
             values = [float(ii) if ii.isdigit() else ii for ii in values]
             args[key] = values
@@ -351,13 +351,17 @@ print
 ##########################################
 print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'
 subset_dict = checkDictTxt(files['SUBSET'],verbose=True);
-master_mapping = subsetWells(master_mapping,subset_dict,verbose=True); print master_mapping
+master_mapping = subsetWells(master_mapping,subset_dict,verbose=True).reset_index(drop=True)#; 
+master_mapping.index.name='Sample_ID';
+master_mapping = master_mapping.reset_index(drop=False);
+print
+print master_mapping
 
 sub_data,sub_key = {},{}
 sub_gdata,sub_gkey = {},{}
 
 for pid in data.keys():
-    print pid
+    #print pid
     # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
     # can be used for GrowthData as key
     sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
@@ -373,34 +377,64 @@ for pid in data.keys():
 
         sub_key[pid] = sub_mapping;
 
-        #print df_pid.shape, sub_mapping.shape
         #gdata = growth.GrowthPlate(data=df_pid,key=sub_mapping);
-        #print gdata
-        #print df_pid.head(),sub_mapping.head()
 
 print 
-master_data = pd.concat(sub_data.values(),sort=False).reset_index();
+master_data = pd.concat(sub_data.values(),sort=False).reset_index()
 master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',header=True,index=False)
 
 gdata_input = reduce(lambda left,right: pd.merge(left,right,on='Time',how='outer'),sub_gdata.values())
-gdata_time = gdata_input.loc[:,'Time']; print gdata_time.shape
-gdata_input = gdata_input.drop('Time',axis=1).T.reset_index(drop=True).T
+gdata_input = gdata_input.sort_values(['Time']).reset_index(drop=True);
+gdata_input.columns = ['Time']+range(gdata_input.shape[1]-1)
+#gdata_time = gdata_input.loc[:,'Time']; print gdata_time.shape;
+#gdata_input = gdata_input.drop('Time',axis=1).T.reset_index(drop=True).T;
 
-print gdata_input.iloc[range(90,99),:]
-print gdata_time.iloc[range(900,99)]
-print pd.concat(sub_key.values()).reset_index(drop=True)
+# print gdata_input.head()
+# print
+# print gdata_input.tail()
+# print
+# print gdata_time.head()
+# print
+# print gdata_time.tail()
+# print
+# print pd.concat(sub_key.values()).reset_index(drop=True)
 
-gdata = growth.GrowthPlate(data=gdata_input,
-                           key=pd.concat(sub_key.values()).reset_index(drop=True),
-                           time=gdata_time);
-print gdata
-print gdata.data.shape
-print gdata.key.shape
-print gdata.data.head(10)
-print gdata.key.head(10)
+# gdata = growth.GrowthPlate(data=gdata_input,
+#                            key=pd.concat(sub_key.values()).reset_index(drop=True),
+#                            time=gdata_time);
+# print gdata
+# print gdata.data.shape
+# print gdata.key.shape
+#print gdata.data.head(10)
+# print gdata.key.head(10)
+##########################################
 
+##########################################
+print 'READING HYPOTHESIS'
+hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
+#master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True)
+#master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 ##########################################
+gdata_key = pd.concat(sub_key.values()).reset_index(drop=True)
+
+gdata = growth.GrowthPlate(data=gdata_input,key=gdata_key)
+gdata.convertTimeUnits()
+gdata.logData()
+gdata.subtractBaseline()
+
+gdata.runTestGP(hypothesis=hypo_dict)
+
+joint_df = pd.melt(gdata_input,id_vars='Time',var_name='Sample_ID',value_name='OD')
+joint_df = joint_df.merge(gdata_key,on='Sample_ID')
+joint_df = joint_df.loc[:,['OD']+hypo_dict['H1']]
+joint_df = joint_df.sort_values('Time').reset_index(drop=True)
+
+#print joint_df.head()
+#print joint_df.shape
+#print joint_df.tail()
+
+sys.exit('~~~DONE~~~')
 
 ##########################################
 
