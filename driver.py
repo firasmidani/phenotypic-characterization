@@ -357,45 +357,60 @@ master_mapping = master_mapping.reset_index(drop=False);
 print
 print master_mapping
 
-sub_data,sub_key = {},{}
-sub_gdata,sub_gkey = {},{}
+def subsetData(data,master_mapping):
 
-for pid in data.keys():
+    tidy_data,wide_data = {},{}
+    sub_key = {}
 
-    # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
-    # can be used for GrowthData as key
-    
-    sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
-    if sub_mapping.shape[0] > 0:
+    # for each plate_id
+    for pid in data.keys():
+
+        # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
+        # can be used for GrowthData as key
         
-        wells = list(sub_mapping.Well.values)
-        
-        df_pid = data[pid].loc[:,['Time'] + wells]; # same format; just removing wells/rows
-        df_pid_melt = meltData(df_pid,pid); # 
+        # grab all wells and their info
+        sub_mapping = master_mapping[master_mapping.Plate_ID == pid]; 
 
-        sub_gdata[pid] = df_pid;
-        sub_data[pid] = df_pid_melt;
+        # only continue if mapping is not empty
+        if sub_mapping.shape[0] > 0:
+            
+            # list all well IDs (usually A1 through H12)
+            wells = list(sub_mapping.Well.values)
+            
+            # recall that data[pid] is time (p) x wells (n)
+            # so here you are selecting for wells in sub_mapping
+            df_pid = data[pid].loc[:,['Time'] + wells]; # same format; just removing wells/rows
+            
+            # melt data so that headers are ['Well','Time','OD','Plate_ID']
+            # there would be nxt rows, b/c number of wells (n) x number of time points (t)
+            df_pid_melt = meltData(df_pid,pid); # 
 
-        sub_key[pid] = sub_mapping;
+            # save in a dictionary
+            wide_data[pid] = df_pid; #sub_gdata[pid] = df_pid;
+            tidy_data[pid] = df_pid_melt; # tidy_data[pid] = df_pid_melt;
 
-        #gdata = growth.GrowthPlate(data=df_pid,key=sub_mapping);
+            sub_key[pid] = sub_mapping;
+
+    return wide_data,tidy_data,sub_key
+
+wide_data,tidy_data,sub_key = subsetData(data,master_mapping)
 
 print 
-master_data = pd.concat(sub_data.values(),sort=False).reset_index()
+master_data = pd.concat(tidy_data.values(),sort=False).reset_index()
 master_data.to_csv('%s/stitched_data_input.txt' % directory['MAPPING'],sep='\t',header=True,index=False)
 
-def packageGrowthPlate(sub_gdata,sub_key):
+def packageGrowthPlate(data_dict,key_dict):
 
     ## ll is short for left and rr is short for right
-    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),sub_gdata.values());
+    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),data_dict.values());
     gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
     gplate_data.columns = ['Time'] + range(gplate_data.shape[1]-1);
-    gplate_key = pd.concat(sub_key.values()).reset_index(drop=True);
+    gplate_key = pd.concat(key_dict.values()).reset_index(drop=True);
 
     gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
 
     return gplate
-    
+
 ##########################################
 
 ##########################################
@@ -403,92 +418,58 @@ print 'READING HYPOTHESIS'
 hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
-##########################################
 
+##########################################
+#gplate = growth.GrowthPlate(data=gdata_input,key=gdata_key)
+gplate = packageGrowthPlate(wide_data,sub_key)
+
+gplate.convertTimeUnits()
+gplate.logData()
+gplate.subtractBaseline()
 
 if len(hypo_dict) > 0 :
-    #gplate = growth.GrowthPlate(data=gdata_input,key=gdata_key)
-    gplate = packageGrowthPlate(sub_gdata,sub_key)
-    gplate.convertTimeUnits()
-    gplate.logData()
-    gplate.subtractBaseline()
-
     gplate.runTestGP(hypothesis=hypo_dict)
 
-    sys.exit('~~~DONE~~~')
+sample_output_list = [];
+sample_mapping_list = [];
 
-#sys.exit('~~~DONE~~~')
+for sample_id in sorted(master_mapping.Sample_ID.unique()):
 
-##########################################
+    sample_curve = gplate.extractGrowthData({'Sample_ID':[sample_id]});
 
-key_list = [];
-od_list = [];
+    sample_metrics = growth.GrowthMetrics(sample_curve);
+    sample_metrics.basicSummary(unmodified=True);
+    sample_metrics.fitGP();
+    sample_metrics.inferGPDynamics();
+    sample_metrics.inferDoublingTime(mtype='GP');
+    sample_metrics.predictGP()
 
-for _,sample in master_mapping.iterrows():
+    sample_output = pd.concat([sample_metrics.time,
+                               sample_metrics.input_data,
+                               sample_metrics.data,
+                               sample_metrics.pred],axis=1)
 
-    Well_ID, Plate_ID = sample[['Well','Plate_ID']];
-    
-    # initialize data and key
-    sample_data = grabCurve(master_data,Well_ID,Plate_ID);
-    sample_key = pd.DataFrame([Well_ID,Plate_ID],index=['Well','Plate_ID']).T
+    sample_output.columns = ['Time','OD_input','OD_cleaned','OD_predicted']
+    sample_id_df = pd.DataFrame([sample_id]*sample_output.shape[0],columns=['Sample_ID']);
+    sample_output = sample_output.join(sample_id_df)
 
-    # package into GrwothData object
-    curve = packGrowthData(sample_data,sample_key)
+    sample_output_list.append(sample_output)
+    sample_mapping_list.append(sample_metrics.key)
 
-    # basic summary: min, max, and T0
-    curve.basicSummary()
+sample_output_df = pd.concat(sample_output_list,axis=0)
+sample_mapping_list = pd.concat(sample_mapping_list,axis=0);
 
-    # convert time from seconds to hours, base-10 log-transform OD, and subtract T0
-    curve.convertTimeUnits()
-    curve.logData()
-    curve.subtractBaseline()
+OD_input = sample_output_df.pivot(index='Time',columns='Sample_ID',values='OD_input')
+OD_cleaned = sample_output_df.pivot(index='Time',columns='Sample_ID',values='OD_cleaned')
+OD_predicted = sample_output_df.pivot(index='Time',columns='Sample_ID',values='OD_predicted')
 
-    # apply GP model fitting, infer growth parameters, and predict OD
-    curve_fit = growth.GrowthMetrics(curve);
-    curve_fit.fitGP();
-    curve_fit.inferGPDynamics();
-    curve_fit.inferDoublingTime(mtype='GP');
-    curve_fit.predictGP();
-
-    print curve_fit.key.head()
-
-    curve_output = pd.concat([curve_fit.time,curve.input_data,curve_fit.data,curve_fit.pred],axis=1)
-    curve_output.columns = ['Time','OD_input','OD_cleaned','OD_predicted']
-    
-    well_id = curve_fit.key.loc[:,['Well','Plate_ID']].values
-    well_id_df = pd.DataFrame(index=curve_output.index,columns=['Well','Plate_ID']);
-    well_id_df.loc[:,['Well','Plate_ID']] = [well_id]*curve_output.shape[0]
-
-    curve_output = well_id_df.join(curve_output)
-
-    key_list.append(curve_fit.key)
-    od_list.append(curve_output)
-    #pred_list.append(curve_fit.pred)
-
-#     fig,ax = curve_fit.plot()
-#     plt.savefig('/Users/firasmidani/Downloads/20190911/%s_%s.pdf' % (Plate_ID,Well_ID),filetype='pdf')
-
-sys.exit('~~~DONE~~~')
-
-
-key_list = pd.concat(key_list)
-key_list.to_csv('%s/stitched_key_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
-
-od_list = pd.concat(od_list)
-od_list.to_csv('%s/stitched_od_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
+sample_output_df.to_csv('%s/stitched_od_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
+sample_mapping_list.to_csv('%s/stitched_key_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
 
 ##########################################
-
-# do i combine all data (melt it too) ? 
-# do i run each plate separately ? 
-# do i save all data results together ? 
-
-# I should analyze all seperately but have the option to merge all results!
-
-
-
 
 print('\n')
 
+sys.exit('~~~DONE~~~')
 
 
