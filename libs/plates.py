@@ -236,10 +236,11 @@ def findPlateReaderFiles(directory):
 
     for (dirpath, dirnames, filenames) in os.walk(directory):
         for filename in filenames:
-            if filename.endswith(".TXT") or  filename.endswith(".asc"):
+            if filename.endswith(".txt") or filename.endswith(".TXT") or  filename.endswith(".asc"):
                 sep = ['' if dirpath[-1]=='/' else '/'][0]
                 ls_files.append('%s%s%s' % (dirpath,sep,filename))
     
+
     return ls_files
 
 def findSugarBiolog(sugar):
@@ -555,34 +556,58 @@ def plotGroupedGrowth(subtrate,df_growth_means,df_plate,df_dict):
 
     return fig,ax
 
-def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logged=False):
+def addRowColVarbs(df_data,df_key):
+
+    if all(x in df_key.columns for x in ['Row','Column']):
+        return df_key
+
+    row_map = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8};
+
+    if 'Well' in df_key.columns:
+        df_key = df_key.join(parseWellLayout(),on='Well');
+    else:
+        df_key = df_key.join(parseWellLayout().reset_index())
+
+    df_key.Row = df_key.Row.replace(row_map);
+    df_key.Column = df_key.Column.astype(int);
+    df_key.set_index('Well',inplace=True)
+    df_data.index = df_key.index;
+
+    return df_data,df_key
+
+
+def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logged=False,control='A1'):
+
+    ''' meant for 8x12 plates only
+
+    df -- pandas.DataFrame with wells (n) by timepoints (t). index should be well id (e.g. A1)
+    summary -- pandas.DataFrame with wells (n) by variables (p). must include 
+
+    if modified, then OD should be T0-subtracted after natural log-transformation
+    '''
 
     fig,axes = plt.subplots(8,12,figsize=[12,8])
 
-    # subtract T0 from other time points in each well
-    #df = df.apply(lambda col: col - df.loc[:,0], axis=0)
+    #df,summary =  addRowColVarbs(df,summary) 
 
     # round up window limits to integers
-    ymax = np.ceil(df.max().max()); 
-    ymin = np.floor(df.min().min());
+    ymax = np.ceil(df.max(1).max()); 
+    ymin = np.floor(df.min(1).min()); #this gives correct min but OD dips around 0 sometimes
     xmax = float(df.columns[-1])
-    xmax_h = int(np.ceil(float(df.columns[-1])/60/60))
+    #xmax_h = int(np.ceil(float(df.columns[-1])/60/60))
+    xmax_h = int(np.ceil(float(df.columns[-1])))
 
     for idx in df.index:
         
-        r,c = summary.loc[idx,['Row','Column']].values-1;
+        r,c = summary.loc[idx,['Row','Column']]-1;
 
         ax = axes[r,c]
-        
+
         # green if above threshoold, gray if below
-        if summary.loc[idx,'Fold Change']>threshold:
-            #color_l = (0.0,0.40,0.0,1.00) # green
-            #color_f = (0.0,0.40,0.0,0.35)
+        if summary.loc[idx,'Fold_Change']>threshold:
             color_l = (0.0,0.00,1.0,1.00) # blue
-            color_f = (0.0,0.00,1.0,0.15)
-        elif summary.loc[idx,'Fold Change']<0.50:
-            #color_l = (1.0,0.6,0.0,1.00) # orange
-            #color_f = (1.0,0.6,0.0,0.35)
+            color_f = (0.0,0.00,1.0,0.15) 
+        elif summary.loc[idx,'Fold_Change']<0.50:
             color_l = (1.0,0.0,0.0,1.00) # red
             color_f = (1.0,0.0,0.0,0.15)
         else:
@@ -600,7 +625,6 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
 
         ax.plot(x,y,color=color_l,lw=1.5);
         
-
         if logged:
             ax.fill_between(x=x,y1=[ax.get_ylim()[0]]*df.shape[1],y2=y,color=color_f);
         else:
@@ -622,24 +646,20 @@ def plotPlateGrowth(df,summary,threshold=1.5,title="",savefig=0,filepath="",logg
 
         # add well identifier on top left of each subplot
         well_color = (0.65,0.165,0.165,0.8);#(0,0,1,0.5)
-        ax.text(0., 1., idx, color=well_color,
+        ax.text(0., 1., summary.loc[idx,'Well'], color=well_color,
                 horizontalalignment='left', verticalalignment='top', 
                 transform=ax.transAxes);
 
-        ax.text(1., 1., "%0.2f" % summary.loc[idx,'Max OD'], color='black',
+        ax.text(1., 1., "%0.2f" % summary.loc[idx,'Max_OD'], color='black',
                 horizontalalignment='right', verticalalignment='top', 
                 transform=ax.transAxes);
-    
-    # if logged:
-    #   ax.set_yscale('log')
 
     fig.text(0.515, 0.07, 'Time (hours)', fontsize=15, 
              ha='center', va='bottom', 
              transform=ax.transAxes);
 
-    
     if logged:
-        ylabel_text = 'log(Optical Density) (620 nm)';
+        ylabel_text = 'ln Optical Density (620 nm)';
     else:
         ylabel_text = 'Optical Density (620 nm)';
             
@@ -772,7 +792,7 @@ def grabValueFromDF(df,key,fillna=None):
 
 def initSubstratesDF(pmn):
 
-    sr = parseBiologLayout().loc[:,str(pmn)];
+    sr = parseBiologLayout().loc[:,str(int(pmn))];
     df = pd.DataFrame(sr)
     df.columns = ['Substrate']
 
@@ -866,7 +886,7 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
 
     content = open(filepath).readlines();
     sneakPeak = content[0];
-
+    
     if isASCII(sneakPeak):
         
         print '%s is encoded with ASCII' % filename
