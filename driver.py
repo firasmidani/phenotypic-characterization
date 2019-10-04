@@ -14,6 +14,7 @@
 import os
 import sys
 import argparse
+import numpy as np
 import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -42,6 +43,7 @@ parser.add_argument('-v','--verbose',action='store_true',default=False)
 # --plot-plates (only plot plate to visualize for any odd things)
 # --plot-wells (plot each desired well)
 # --plot-only
+visual_check_only = True
 
 # --no-flags
 # --no-subsets
@@ -198,12 +200,16 @@ def subsetWells(df,criteria,verbose=False):
 
     return df
 
-def smartmapping(filebase,mapping_path,DATA,df_meta,df_meta_plates):
+def smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates):
 
     if os.path.exists(mapping_path):
 
         print '%s: Reading %s' % (filebase,mapping_path)
         df_mapping = pd.read_csv(mapping_path,sep='\t',header=0,index_col=0);
+
+        if 'Plate_ID' not in df_mapping.index:
+
+            df_mapping.loc[:,'Plate_ID'] = [filebase]*df_mapping.shape[0];
 
     elif filebase in df_meta_plates:
         
@@ -341,6 +347,10 @@ files['INTERVAL'] = '%s/interval.txt' % directory['PARAMETERS']
 checkdirectoryExists(directory['PARENT'],'Input directory',verbose=True,sys_exit=True)
 checkdirectoryExists(directory['DATA'],'Data directory',verbose=True)
 checkdirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
+checkdirectoryExists(directory['DERIVED'],'Derived data directory',verbose=True,initialize=True)
+checkdirectoryExists(directory['SUMMARY'],'Summary directory',verbose=True,initialize=True)
+checkdirectoryExists(directory['FIGURES'],'Figures directory',verbose=True,initialize=True)
+
 ##############
 
 ##########################################
@@ -358,8 +368,8 @@ df_meta, df_meta_plates = checkMetaTxt(files['META'],verbose=True)
 ##########################################
 print 'READING & ASSEMBLING mapping'
 for filename in list_data:
-    filebase = os.path.splitext(filename)[0];
-    mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase);
+    filebase = os.path.splitext(filename)[0]; 
+    mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase); print mapping_path
     well_ids = data[filebase].columns[1:];
     mapping[filebase] = smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
 master_mapping = pd.concat(mapping.values(),ignore_index=True,sort=False)
@@ -367,21 +377,9 @@ print
 
 ##########################################
 
-# plot_plates = True
-# if plot_plates:
-#     for pid in data.keys():
-#         print data[pid].head()
-#         filepath = '%s/%s.pdf' % (directory['FIGURES'],pid)
-#         data[pid].Time = data[pid].
-#         #growth.GrowthPlate(data[pid]).plot(title="",savefig=False,filepath="")
-#         print mapping[pid]
-
-# sys.exit('DONE')
-
-
 ##########################################
 print 'READING HYPOTHESIS'
-hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+');
+hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 ##########################################
@@ -396,32 +394,51 @@ print
 
 ##########################################
 print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'
-subset_dict = checkDictTxt(files['SUBSET'],verbose=True);
+subset_dict = checkDictTxt(files['SUBSET'],verbose=True); print subset_dict
+print master_mapping
 master_mapping = subsetWells(master_mapping,subset_dict,verbose=True).reset_index(drop=True)#; 
 master_mapping.index.name='Sample_ID';
-master_mapping = master_mapping.reset_index(drop=False);
+master_mapping = master_mapping.reset_index(drop=False); print master_mapping
 wide_data_dict,key_dict = subsetCombineData(data,master_mapping)
 gplate = packageGrowthPlate(wide_data_dict,key_dict)
 print
-print master_mapping
 ##########################################
 
 ##########################################
+
+gplate.computeFoldChange()
 gplate.convertTimeUnits()
 gplate.logData()
 gplate.subtractBaseline()
 
+#gplate.addRowColVarbs()
+
+visual_check = False
+if visual_check:
+
+    gplate.addRowColVarbs()
+    filepath = '%s/plot_visual_check.pdf' % directory['FIGURES']
+    fig,axes = gplate.plot(savefig=True,title="",filepath=filepath,modified=True)
+    
+    sys.exit('DONE')
+
 if len(hypo_dict) > 0 :
     gplate.runTestGP(hypothesis=hypo_dict)
+    sys.exit('~~~DONE~~~')
 
 sample_output_list = [];
 sample_mapping_list = [];
 
 for sample_id in sorted(master_mapping.Sample_ID.unique()):
 
+    #sample_id = 32
+
     sample_curve = gplate.extractGrowthData({'Sample_ID':[sample_id]});
 
     sample_metrics = growth.GrowthMetrics(sample_curve);
+
+    # check if basicSummary already exists
+
     sample_metrics.basicSummary(unmodified=True);
     sample_metrics.fitGP();
     sample_metrics.inferGPDynamics();
@@ -439,7 +456,37 @@ for sample_id in sorted(master_mapping.Sample_ID.unique()):
     sample_output = sample_output.join(sample_id_df)
 
     sample_output_list.append(sample_output)
-    sample_mapping_list.append(sample_metrics.key)
+    sample_mapping_list.append(sample_metrics.key);
+
+#    if plot_results:
+
+    # if sample_id == 32:
+
+    #     filepath = '%s/plot_results.pdf' % directory['FIGURES']
+
+    #     #print sample_metrics.key.T
+    #     #print type(sample_metrics.key.Row)
+    #     #print sample_metrics.key.Row.values[0]
+    #     #print sample_metrics.key.Row.values[0]-1
+
+    #     r = sample_metrics.key.Row.values[0]-1
+    #     c = sample_metrics.key.Column.values[0]-1
+
+    #     ax = axes[r,c]
+    #     x_data = np.ravel(sample_metrics.time.astype(float).values)
+    #     y_data = np.ravel(sample_metrics.pred.astype(float).values)
+    #     y_data = [1]*len(x_data)
+    #     print ax.get_xlim(),ax.get_yowlim()
+    #     print x_data,y_data
+    #     filepath = '%s/plot_result.pdf' % directory['FIGURES']
+
+    #     ax.plot(x=[0,3],y=[0,3],color=(1,0,0,0.8),lw=10)
+    #     axes[0,0].plot(x=x_data,y=    y_data,color=(1,1,0,0.8),lw=10)
+
+    #     fig.savefig(filepath,filetype='pdf')
+        
+    #     sys.exit('~~~DONE~~~~')
+
 
 sample_output_df = pd.concat(sample_output_list,axis=0)
 sample_mapping_list = pd.concat(sample_mapping_list,axis=0);
@@ -450,6 +497,7 @@ OD_predicted = sample_output_df.pivot(index='Time',columns='Sample_ID',values='O
 
 sample_output_df.to_csv('%s/stitched_od_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
 sample_mapping_list.to_csv('%s/stitched_key_output.txt' % directory['SUMMARY'],sep='\t',header=True,index=False)
+
 
 ##########################################
 
