@@ -96,7 +96,7 @@ import scipy.stats as stats
 sys.path.append('..')
 
 from classical import fit, gompertz, logistic
-from plates import plotPlateGrowth
+from plates import plotPlateGrowth,parseWellLayout
 
 # UTILITY FUNCTIONS 
 
@@ -135,6 +135,8 @@ def computeLikelihood(df,varbs):
     y = pd.DataFrame(df.OD)
     x = df.drop('OD',axis=1).values
 
+    print x.shape
+    
     k = GPy.kern.RBF(x.shape[1],ARD=True)
     m = GPy.models.GPRegression(x,y,k); m.optimize()
     
@@ -186,9 +188,48 @@ class GrowthPlate(object):
         
     #enddef 
 
+    def addRowColVarbs(self):
+
+        if all(x in self.key.columns for x in ['Row','Column']):
+            return None
+
+        row_map = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8};
+
+        if 'Well' in self.key.columns:
+            self.key = self.key.join(parseWellLayout(),on='Well');
+        else:
+            self.key = self.key.join(parseWellLayout().reset_index())
+
+        self.key.Row = self.key.Row.replace(row_map);
+        self.key.Column = self.key.Column.astype(int);
+        #self.key.set_index('Well',inplace=True)
+        #self.data.columns = self.key.index;
+
+        return None
+
+    def computeFoldChange(self):
+        '''
+        just like basicSummary for GrowthMetrics object but computes fold change
+        '''
+
+        df = self.input_data.copy(); # timepoints (t) x wells (n)
+
+        df = df.apply(lambda row: row - df.loc[0,:], axis=1); # subtract baseline
+
+        df_max = df.max(0); # pandas.series
+        df_min = df.min(0);
+        df_baseline = df.iloc[0,:]; 
+        df_fc = df_max / df_max.loc[0];
+
+        joint_df = pd.concat([df_min,df_max,df_baseline,df_fc],axis=1);
+        joint_df.columns = ['Min_OD','Max_OD','Baseline_OD','Fold_Change']
+
+        self.key = self.key.join(joint_df)
+        
     def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']}):
 
         joint_df = self.time.join(self.data)
+
         
         joint_df = pd.melt(joint_df,id_vars='Time',var_name='Sample_ID',value_name='OD')
         joint_df = joint_df.merge(self.key,on='Sample_ID');
@@ -198,8 +239,8 @@ class GrowthPlate(object):
         #   'Time' and 'OD'. Additional columns can be explicitly called by user 
         #   using hypothesis argument
 
-        L1 = computeLikelihood(joint_df,hypothesis['H1']);
-        L0 = computeLikelihood(joint_df,hypothesis['H0']);
+        L1 = computeLikelihood(joint_df,hypothesis['H1']); print L1
+        L0 = computeLikelihood(joint_df,hypothesis['H0']); print L0
 
         logBF = L1 - L0;
 
@@ -281,19 +322,15 @@ class GrowthPlate(object):
 
         # make sure variable selections are not empty
         if not bool(arg_dict):
-
             print("Error: Selection of variables must be defined by a dictionary.")
-            
             return None
         
         # make sure variable selections are formated as a dictionary of lists or np.arrays
         for dict_key,value in arg_dict.iteritems():
-
             if (len(value)==1) and not (isinstance(value,(list,np.ndarray))):
-
                 arg_dict[dict_key] = [value];
 
-
+        #
         sub_key = self.key[self.key.isin(arg_dict).sum(1)==len(arg_dict)];
         sub_key_idx = sub_key.index;
         
@@ -307,17 +344,23 @@ class GrowthPlate(object):
 
         return GrowthData(sub_time,sub_data,sub_key,sub_mods,sub_input_data,sub_input_time)
 
-    def plot(self,title="",savefig=False,filepath=""):
+    def plot(self,title="",savefig=False,filepath="",control='A1',modified=True):
         '''
         only works if data is a whole 96-well plate
         '''
 
-        df = self.data.copy().T;
-        df.columns = np.ravel(self.time.copy().values);
-        summary = self.key;
-        title = summary.Plate[0]
+        if modified:
+            df = self.data.copy().T;
+        else:
+            df = self.input_data.copy().T;
 
-        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title=title,savefig=savefig,filepath=filepath,logged=self.mods.logged);
+        df.columns = np.ravel(self.time.copy().values);
+        print df.head()
+        
+        summary = self.key;
+        #title = summary.Plate[0]
+
+        fig,axes = plotPlateGrowth(df,summary,threshold=1.5,title=title,savefig=savefig,filepath=filepath,logged=self.mods.logged,control=control);
 
         return fig,axes
 
@@ -470,7 +513,12 @@ class GrowthMetrics(object):
         self.classical_model = classical_model;
         self.gp_model = None;
     
-    def basicSummary(self,unmodified=False):
+    def basicSummary(self,unmodified=False,computeFC=False):
+
+        cols = self.key.columns;
+
+        if all(x in cols for x in ['Max_OD','Min_OD','Baseline_OD']):
+            return None
 
         if unmodified: 
             data = np.ravel(self.input_data.values)
@@ -481,7 +529,9 @@ class GrowthMetrics(object):
         max_v = np.max(data);#[0];
         baseline_v = data[0];
 
-        summ_df = pd.DataFrame(index=self.key.index,columns=['Min','Max','Base'])
+        #if computeFC:
+
+        summ_df = pd.DataFrame(index=self.key.index,columns=['Min_OD','Max_OD','Baseline_OD'])
         summ_df.loc[self.key.index,:] = [min_v,max_v,baseline_v]
 
         self.key = self.key.join(summ_df)
