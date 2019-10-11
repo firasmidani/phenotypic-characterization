@@ -475,7 +475,6 @@ if master_mapping.shape[0] == 0:
     print('ERROR: no wells selected. System Exitting!')
     sys.exit()
 
-print 'WIDENING'
 wide_data_dict,key_dict = subsetCombineData(data,master_mapping)
 gplate = packageGrowthPlate(wide_data_dict,key_dict)
 print
@@ -504,7 +503,7 @@ if len(hypo_dict) > 0 :
     print hypo_dict
 
     start = time.time()
-    gplate.runTestGP(hypothesis=hypo_dict,thinning=9)
+    gplate.runTestGP(hypothesis=hypo_dict,thinning=11,permute=True)
     print
     print('ELAPSED TIME:\t%s' % (time.time() - start))
 
