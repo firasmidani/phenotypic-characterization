@@ -116,7 +116,7 @@ def gpDerivative(x,gp):
     
     return mu,mult*cov   
 
-def computeLikelihood(df,varbs):
+def computeLikelihood(df,varbs,permute=False):
     '''
     df pd.DataFrame with at least two columns Time and OD and additional columns
     varbs to include in hypothesis (should include Time)
@@ -133,12 +133,14 @@ def computeLikelihood(df,varbs):
             df.loc[:,varb] = pd.factorize(df.loc[:,varb])[0]
 
     y = pd.DataFrame(df.OD)
-    x = df.drop('OD',axis=1).values
+    x = df.drop('OD',axis=1)#.values
 
-    print x.shape
+    if permute:
+        to_permute = [ii for ii in varbs if ii != 'Time']; print to_permute
+        x.loc[:,to_permute] = x.sample(n=x.shape[0]).loc[:,to_permute].values 
     
-    k = GPy.kern.RBF(x.shape[1],ARD=True)
-    m = GPy.models.GPRegression(x,y,k); m.optimize()
+    k = GPy.kern.RBF(x.values.shape[1],ARD=True)
+    m = GPy.models.GPRegression(x.values,y,k); m.optimize()
     
     return m.log_likelihood();
 
@@ -226,7 +228,7 @@ class GrowthPlate(object):
 
         self.key = self.key.join(joint_df)
         
-    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']},thinning=1):
+    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']},thinning=1,permute=False,nperm=10):
 
         joint_df = self.time.join(self.data)
 
@@ -237,12 +239,13 @@ class GrowthPlate(object):
             select = np.arange(0,joint_df.shape[0],thinning);
             joint_df = joint_df.iloc[select,:]
         print joint_df.shape
-
+        print joint_df.head()
 
         #print joint_df
         joint_df = pd.melt(joint_df,id_vars='Time',var_name='Sample_ID',value_name='OD')
         joint_df = joint_df.merge(self.key,on='Sample_ID');
 
+        print joint_df.head()
         # melts data frame such as each row is a single measurement
         # columns include at leat 'Sample_ID' (i.e. specific well in specific palte) and
         #   'Time' and 'OD'. Additional columns can be explicitly called by user 
@@ -252,14 +255,22 @@ class GrowthPlate(object):
         #print joint_df.shape
         #print joint_df
 
-        L1 = computeLikelihood(joint_df,hypothesis['H1']); print L1
-        L0 = computeLikelihood(joint_df,hypothesis['H0']); print L0
+        L1 = computeLikelihood(joint_df,hypothesis['H1']); print 'L1',L1[0]
+        L0 = computeLikelihood(joint_df,hypothesis['H0']); print 'L0',L0[0]
+
+        if permute:
+            null_dist = [];
+            for rr in range(nperm):
+                null_value = computeLikelihood(joint_df,hypothesis['H1'],permute=True).values
+                null_dist.append(null_value[0]-L0[0]);
+        else:
+            null_dist = []
 
         logBF = L1 - L0;
 
         print 'log(BF) is %0.3f' % logBF
-
-        return logBF
+        print 'null log(BF)',null_dist
+        return logBF,null_dist
 
     def logData(self):
         '''Transform with a natural logarithm all data points'''
