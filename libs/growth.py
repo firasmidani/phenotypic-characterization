@@ -226,11 +226,20 @@ class GrowthPlate(object):
 
         self.key = self.key.join(joint_df)
         
-    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']}):
+    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']},thinning=1):
 
         joint_df = self.time.join(self.data)
 
-        
+        #time_idx = sorted(joint_df.Time.unique())
+
+        # thinning is the step size essentially: 11 gets you 0, 11, 22, ..., 88, 99
+        if thinning!=1:
+            select = np.arange(0,joint_df.shape[0],thinning);
+            joint_df = joint_df.iloc[select,:]
+        print joint_df.shape
+
+
+        #print joint_df
         joint_df = pd.melt(joint_df,id_vars='Time',var_name='Sample_ID',value_name='OD')
         joint_df = joint_df.merge(self.key,on='Sample_ID');
 
@@ -238,6 +247,10 @@ class GrowthPlate(object):
         # columns include at leat 'Sample_ID' (i.e. specific well in specific palte) and
         #   'Time' and 'OD'. Additional columns can be explicitly called by user 
         #   using hypothesis argument
+
+        #print hypothesis
+        #print joint_df.shape
+        #print joint_df
 
         L1 = computeLikelihood(joint_df,hypothesis['H1']); print L1
         L0 = computeLikelihood(joint_df,hypothesis['H0']); print L0
