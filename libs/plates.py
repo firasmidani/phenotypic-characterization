@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 
 # Firas Said Midani
 # Start date: 2018-10-08
@@ -918,6 +918,11 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
     df.T.index.name = 'Time';
 
     # this makes sure to grab only rows that begin with well ids
+
+    # find shared well_ids
+    
+
+
     df = df.loc[parseWellLayout(order_axis=1).index];
 
     # remove columns (time points) with only NA values
