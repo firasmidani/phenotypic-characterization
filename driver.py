@@ -12,10 +12,13 @@
 ##################################
 
 import os
+import re
 import sys
 import argparse
 import numpy as np
 import pandas as pd
+
+import time
 
 import matplotlib.pyplot as plt
 
@@ -35,22 +38,47 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i','--input',required=True)
 parser.add_argument('-v','--verbose',action='store_true',default=False)
 
-#parser.add_argument('-f','--flag',required=False)
-#parser.add_argument('-s','--subset',required=False)
-#parser.add_argument('-H','--hypothesis',required=False)
+parser.add_argument('-f','--flag',required=False)
+parser.add_argument('-s','--subset',required=False)
+parser.add_argument('-H','--hypothesis',required=False)
+parser.add_argument('-I','--interval',required=False)
+
+parser.add_argument('--plot-plates-only',action='store_true',default=False)
+
 #parser.add_argument('-m','--merge-results',required=False)
 
-# --plot-plates (only plot plate to visualize for any odd things)
 # --plot-wells (plot each desired well)
 # --plot-only
-visual_check_only = True
-
 # --no-flags
 # --no-subsets
 
 args = parser.parse_args();
 
-verbose = args.verbose
+flag = args.flag;
+subset = args.subset;
+verbose = args.verbose;
+interval = args.interval;
+hypothesis = args.hypothesis;
+plot_plates_only = args.plot_plates_only # need to check that plates are 8x12
+
+def checkArgText(command,sep=','):
+
+    if command is None:
+        return None
+
+    lines = command.strip(';').strip(' ').split(';');
+    lines_keys = [ii.split(':')[0] for ii in lines];
+    lines_values = [re.split(sep,ii.split(':')[1]) for ii in lines];
+    lines_dict = {ii:jj for ii,jj in zip(lines_keys,lines_values)};
+
+    return lines_dict
+
+def integerizeDictValues(dict):
+
+    if dict is None:
+        return None
+
+    return {key:[int(vv) for vv in value] for key,value in dict.iteritems()}
 
 ##################
 # PROCESS INPUTS
@@ -320,8 +348,8 @@ def packageGrowthPlate(data_dict,key_dict):
     ## ll is short for left and rr is short for right
     gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),data_dict.values());
     gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
-    gplate_data.columns = ['Time'] + range(gplate_data.shape[1]-1);
-    gplate_key = pd.concat(key_dict.values()).reset_index(drop=True);
+    gplate_key = pd.concat(key_dict.values())#.set_index(['Sample_ID']).reset_index(drop=True);
+    gplate_data.columns = ['Time'] + list(gplate_key.Sample_ID.values);
 
     gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
 
@@ -348,6 +376,7 @@ checkdirectoryExists(directory['PARENT'],'Input directory',verbose=True,sys_exit
 checkdirectoryExists(directory['DATA'],'Data directory',verbose=True)
 checkdirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
 checkdirectoryExists(directory['DERIVED'],'Derived data directory',verbose=True,initialize=True)
+checkdirectoryExists(directory['MAPPING'],'Summary directory',verbose=True,initialize=True)
 checkdirectoryExists(directory['SUMMARY'],'Summary directory',verbose=True,initialize=True)
 checkdirectoryExists(directory['FIGURES'],'Figures directory',verbose=True,initialize=True)
 
@@ -356,9 +385,43 @@ checkdirectoryExists(directory['FIGURES'],'Figures directory',verbose=True,initi
 ##########################################
 print 'READING & ASSEMBLING DATA'
 list_data = sorted(os.listdir(directory['DATA']));
-interval_dict = checkDictTxt(files['INTERVAL'],verbose=True); print interval_dict
+
+def initializeParameter(arg_in,arg_value,sep=',',integerize=False):
+
+    if arg_in is None:
+        arg_dict = checkDictTxt(files[arg_value],verbose=True);
+    elif len(arg_in)>0:
+        arg_dict = checkArgText(arg_in,sep=sep);
+    else:
+        arg_dict = {};
+
+    if integerize:
+        return integerizeDictValues(arg_dict);
+    else:
+        return arg_dict
+
+
+interval_dict = initializeParameter(interval,'INTERVAL',sep=',',integerize=True)
+print interval_dict
 data = readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],interval=600,interval_dict=interval_dict)
 ##########################################
+
+if plot_plates_only:
+    # check that each plate has 96 well IDs (in 8x12) format
+
+    for fname,table in data.iteritems():
+
+        print fname
+        print table.head()
+        actual_well_ids = set(sorted(table.columns.values[1:])); print actual_well_ids
+
+
+        # if a plate is Biolog, it seem to automatically have 96 wells internally even if rows are missing
+        expected_well_ids = set(sorted(plates.parseWellLayout().index.values)); print expected_well_ids
+
+        print expected_well_ids.difference(actual_well_ids)
+
+    sys.exit()
 
 ##########################################
 print 'CHECKING FOR META.TXT'
@@ -379,29 +442,44 @@ print
 
 ##########################################
 print 'READING HYPOTHESIS'
-hypo_dict = checkDictTxt(files['HYPO'],verbose=True,spliton='+'); print hypo_dict
+
+hypo_dict = initializeParameter(hypothesis,'HYPO',sep='\+|,',integerize=False)
+print hypo_dict 
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 ##########################################
 
 ##########################################
 print 'REMOVING FLAGGED WELLS'
-flag_dict = checkDictTxt(files['FLAG'],verbose=True);
+
+flag_dict = initializeParameter(flag,'FLAG',sep=',',integerize=False)
+print flag_dict
 master_mapping = dropFlaggedWells(master_mapping,flag_dict,verbose=True);
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
+
+
 ##########################################
 
 ##########################################
 print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'
-subset_dict = checkDictTxt(files['SUBSET'],verbose=True); print subset_dict
-print master_mapping
+subset_dict = initializeParameter(subset,'SUBSET',sep=',',integerize=False)
+print subset_dict
+
 master_mapping = subsetWells(master_mapping,subset_dict,verbose=True).reset_index(drop=True)#; 
 master_mapping.index.name='Sample_ID';
-master_mapping = master_mapping.reset_index(drop=False); print master_mapping
+master_mapping = master_mapping.reset_index(drop=False); 
+print master_mapping
+
+if master_mapping.shape[0] == 0:
+    print('ERROR: no wells selected. System Exitting!')
+    sys.exit()
+
+print 'WIDENING'
 wide_data_dict,key_dict = subsetCombineData(data,master_mapping)
 gplate = packageGrowthPlate(wide_data_dict,key_dict)
 print
+
 ##########################################
 
 ##########################################
@@ -423,8 +501,17 @@ if visual_check:
     sys.exit('DONE')
 
 if len(hypo_dict) > 0 :
-    gplate.runTestGP(hypothesis=hypo_dict)
+    print hypo_dict
+
+    start = time.time()
+    gplate.runTestGP(hypothesis=hypo_dict,thinning=9)
+    print
+    print('ELAPSED TIME:\t%s' % (time.time() - start))
+
     sys.exit('~~~DONE~~~')
+
+sys.exit()
+
 
 sample_output_list = [];
 sample_mapping_list = [];
