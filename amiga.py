@@ -509,7 +509,7 @@ if len(hypo_dict) > 0 :
 
     sys.exit('~~~DONE~~~')
 
-sys.exit()
+#sys.exit()
 
 
 sample_output_list = [];
