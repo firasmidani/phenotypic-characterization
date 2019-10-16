@@ -31,9 +31,9 @@ on Windows:
 
 ```pip install -r requirements.txt```
 
-# How to run the code 
+# Package dependencies
 
-
+If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test it right away. The other requirements are dependencies for the before-mentioned packages. 
 
 **Requirements**
 make sure that your python environment has the following requirements:
@@ -56,6 +56,21 @@ six==1.12.0
 subprocess32==3.5.4
 ```
 
+
+
+# How to run AMiGA and pass arguments via text files
+
+simply call ```amiga.py``` with python and provide the only required argument  that points to the working directory
+
+```python
+python amiga.py 
+	-i /Users/firasmidani/Downloads/20191011/ 
+```
+
+See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
+
+
+# How to run AMiGA and pass arguments via the command line
 
 **Basic Usage**
 
