@@ -63,6 +63,8 @@ See readme_metadata_and_parameters.pdf for information on how to pass arguments 
 
 ## How to run AMiGA and pass arguments via text files
 
+See readme_metadata_and_parameters.pdf for information on how to format your input data and pass arguments via text file. 
+
 Call ```amiga.py``` with python and provide the only required argument that points to the working directory.
 
 ```python
@@ -70,12 +72,9 @@ python amiga.py
 	-i /Users/firasmidani/tecan/xra/ 
 ```
 
-See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
-
-
 ## How to run AMiGA and pass arguments via the command line
 
-**Basic Usage**
+See readme_metadata_and_parameters.pdf for information on how to format your input data and more details on the different parameters that AMiGA accepts.
 
 Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
 
