@@ -988,7 +988,7 @@ def summarizeGrowthDataModified(df,subtract=1,smooth=1,smooth_args=(19,3)):
     for idx in df.index:
         legend.loc[idx,:] = [idx,legend_row[idx[0]],int(idx[1:]),idx[0]]
 
-    summary = pd.DataFrame(index=['Max OD','Growth Fold','Baseline'],
+    summary = pd.DataFrame(index=['Max_OD','Fold_Change','Baseline'],
                            columns=df.index,
                                    data=[df_max.values,df_fold.values,df_baseline.values]).T
 
@@ -1027,7 +1027,7 @@ def summarizeGrowthData(df,subtract=1,smooth=1,smooth_args=(19,3),expand_well_id
     df_max = df.max(1);     
     df_fold = df_max/df_max.loc['A1']; 
 
-    summary = pd.DataFrame(index=['Baseline OD','Max OD','Fold Change'],
+    summary = pd.DataFrame(index=['Baseline_OD','Max_OD','Fold_Change'],
                            columns=df.index,
                            data=[df_baseline.values,df_max.values,df_fold.values]).T
     

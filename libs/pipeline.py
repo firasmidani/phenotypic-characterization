@@ -261,7 +261,7 @@ def visualCheck(data_dict,summary_dict,plate_list,save_dirname="../figures"):
         
         filepath = "%s/%s/%s.pdf" % (save_dirname,
         							plate_summary.Isolate[0],
-                                    plate_summary.Plate[0])
+                                    plate_summary.Plate_ID[0])
         
         plates.createFolder('%s/%s/' % (save_dirname,plates.parsePlateName(plate_id)[0]))
         
