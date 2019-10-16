@@ -58,7 +58,9 @@ six==1.12.0
 subprocess32==3.5.4
 ```
 
+## How to set-up your wokring directory?
 
+See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
 
 ## How to run AMiGA and pass arguments via text files
 
