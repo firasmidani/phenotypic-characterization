@@ -117,7 +117,7 @@ If you want to run a specific hypothesis, you can call it as follows with the *h
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;D-Trehalose'
-	-h 'H0:Time;H0:Time+Substrate'
+	-h 'H0:Time;H1:Time+Substrate'
 ```
 
 
