@@ -36,14 +36,15 @@ from libs.pipeline import readPlateReaderFolder
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-i','--input',required=True)
-parser.add_argument('-v','--verbose',action='store_true',default=False)
 
 parser.add_argument('-f','--flag',required=False)
 parser.add_argument('-s','--subset',required=False)
 parser.add_argument('-H','--hypothesis',required=False)
 parser.add_argument('-I','--interval',required=False)
 
-parser.add_argument('--plot-plates-only',action='store_true',default=False)
+parser.add_argument('-v','--verbose',action='store_true',default=False)
+
+#parser.add_argument('--plot-plate-only',action='store_true',default=False)
 
 #parser.add_argument('-m','--merge-results',required=False)
 
@@ -59,22 +60,46 @@ subset = args.subset;
 verbose = args.verbose;
 interval = args.interval;
 hypothesis = args.hypothesis;
-plot_plates_only = args.plot_plates_only # need to check that plates are 8x12
+plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
 
 def checkArgText(command,sep=','):
+    '''Parses command-line text and formats as a dictionary.
 
+    * text is a list of items that are separated by semicolons (;)
+    * each item is a variable name separated from a list of values with a colon (:)
+    * each list has values separated by commmas (,)
+
+    Args:
+        command (str)
+
+
+    example ARGUMENT 'Isolate:CD630,PRB599;Substrate:Negative Control,D-Trehalose'
+    example OUTPUT {'Isolate':['CD630','PRB599],'Substrate':['Negative Control','D-Trehalose]}
+    '''
     if command is None:
         return None
 
-    lines = command.strip(';').strip(' ').split(';');
+    # strip flanking semicolons or whitespaces then split by semicolon
+    lines = command.strip(';').strip(' ').split(';'); 
+
+    # get names of variables
     lines_keys = [ii.split(':')[0] for ii in lines];
-    lines_values = [re.split(sep,ii.split(':')[1]) for ii in lines];
+
+    # get list of values for all variables
+    lines_values = [re.split(sep,ii.split(':')[1]) for ii in lines]; # why did I use regex here?
+    
+    # re-package variables and their list of values into a dictionary
     lines_dict = {ii:jj for ii,jj in zip(lines_keys,lines_values)};
 
     return lines_dict
 
 def integerizeDictValues(dict):
+    '''
+    converts values in a dictionary into integers. this works if values are iterables (e.g. list)
 
+    example ARGUMENT {'CD630_PM1-1':str(500)}
+    example OUTPUT {'CD630_PM1-1':int(500)}
+    '''
     if dict is None:
         return None
 
@@ -87,7 +112,9 @@ def integerizeDictValues(dict):
 directory,mapping,files = {},{},{};
 
 def checkdirectoryExists(directory,generic_name='directory',verbose=False,sys_exit=False,initialize=False):
-
+    '''
+    Checks if a directory exists. If directory does not exist, it could be initialized. 
+    '''
     exists = os.path.exists(directory);
 
     if exists and verbose:
@@ -105,7 +132,7 @@ def checkdirectoryExists(directory,generic_name='directory',verbose=False,sys_ex
         print('WARNING: %s did not exist but was created.\n' % (directory))
         return True
 
-    elif initilaize:
+    elif initialize:
         os.makedirs(directory)
         return True
 
@@ -358,6 +385,7 @@ def packageGrowthPlate(data_dict,key_dict):
 
 ##########################################
 print 'VERIFYING directory STRUCTURE AND USER INPUT'
+
 directory['PARENT'] = args.input;
 directory['DATA'] = '%s/data' % directory['PARENT']
 directory['DERIVED'] = '%s/data_derived' % directory['PARENT']
@@ -384,6 +412,9 @@ checkdirectoryExists(directory['FIGURES'],'Figures directory',verbose=True,initi
 
 ##########################################
 print 'READING & ASSEMBLING DATA'
+#if filename:
+#    list_data = [os.path.basename(filename)]
+#else:
 list_data = sorted(os.listdir(directory['DATA']));
 
 def initializeParameter(arg_in,arg_value,sep=',',integerize=False):
@@ -403,25 +434,26 @@ def initializeParameter(arg_in,arg_value,sep=',',integerize=False):
 
 interval_dict = initializeParameter(interval,'INTERVAL',sep=',',integerize=True)
 print interval_dict
+
 data = readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],interval=600,interval_dict=interval_dict)
 ##########################################
 
-if plot_plates_only:
-    # check that each plate has 96 well IDs (in 8x12) format
+# if plot_plate_only:
+#     # check that each plate has 96 well IDs (in 8x12) format
 
-    for fname,table in data.iteritems():
+#     for fname,table in data.iteritems():
 
-        print fname
-        print table.head()
-        actual_well_ids = set(sorted(table.columns.values[1:])); print actual_well_ids
+#         print fname
+#         print table.head()
+#         actual_well_ids = set(sorted(table.columns.values[1:])); print actual_well_ids
 
 
-        # if a plate is Biolog, it seem to automatically have 96 wells internally even if rows are missing
-        expected_well_ids = set(sorted(plates.parseWellLayout().index.values)); print expected_well_ids
+#         # if a plate is Biolog, it seem to automatically have 96 wells internally even if rows are missing
+#         expected_well_ids = set(sorted(plates.parseWellLayout().index.values)); print expected_well_ids
 
-        print expected_well_ids.difference(actual_well_ids)
+#         print expected_well_ids.difference(actual_well_ids)
 
-    sys.exit()
+#     sys.exit()
 
 ##########################################
 print 'CHECKING FOR META.TXT'
@@ -433,7 +465,7 @@ print 'READING & ASSEMBLING mapping'
 for filename in list_data:
     filebase = os.path.splitext(filename)[0]; 
     mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase); print mapping_path
-    well_ids = data[filebase].columns[1:];
+    well_ids = data[filebase].columns;
     mapping[filebase] = smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
 master_mapping = pd.concat(mapping.values(),ignore_index=True,sort=False)
 print 
@@ -490,11 +522,12 @@ gplate.subtractBaseline()
 
 #gplate.addRowColVarbs()
 
-visual_check = False
+visual_check = False;#plot_plate_only
+
 if visual_check:
 
     gplate.addRowColVarbs()
-    filepath = '%s/plot_visual_check.pdf' % directory['FIGURES']
+    filepath = '%s/figure.pdf' % (directory['FIGURES'])
     fig,axes = gplate.plot(savefig=True,title="",filepath=filepath,modified=True)
     
     sys.exit('DONE')
