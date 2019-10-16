@@ -3,7 +3,7 @@
 repository for wrangling and analysing data from biolog-based phenotypic characterization
 
 
-## Download Repository (code) [required]
+## Download repository/code [required]
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
