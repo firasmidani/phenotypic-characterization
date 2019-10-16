@@ -3,11 +3,11 @@
 repository for wrangling and analysing data from biolog-based phenotypic characterization
 
 
-**Download Repository (code) — required**
+## Download Repository (code) [required]**
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
-**Set-up a local python environment [optional]**
+## Set-up a local python environment [optional]**
 
 **Make sure your computer has virtual environments for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
 Virtual environments allow you to create a virtual copy of your machine’s python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
@@ -58,7 +58,7 @@ subprocess32==3.5.4
 
 
 
-# How to run AMiGA and pass arguments via text files
+## How to run AMiGA and pass arguments via text files
 
 simply call ```amiga.py``` with python and provide the only required argument  that points to the working directory
 
@@ -70,7 +70,7 @@ python amiga.py
 See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
 
 
-# How to run AMiGA and pass arguments via the command line
+## How to run AMiGA and pass arguments via the command line
 
 **Basic Usage**
 
@@ -78,7 +78,7 @@ simply call ```amiga.py``` with python and provide the only required argument  t
 
 ```python
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 ```
 
 Let's say you have 20 plates in your data directory, but you want to only analyze a specifc subset. You can use the *subset* (```-s``` or ```-subset```) argument to specify these conditions. If you are using Biolog plates, you can for example only include certain isolates and certain substrates in your analysis.
