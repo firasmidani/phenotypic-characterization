@@ -60,7 +60,7 @@ subset = args.subset;
 verbose = args.verbose;
 interval = args.interval;
 hypothesis = args.hypothesis;
-plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
+#plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
 
 def checkArgText(command,sep=','):
     '''Parses command-line text and formats as a dictionary.
@@ -467,7 +467,7 @@ for filename in list_data:
     mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase); print mapping_path
     well_ids = data[filebase].columns;
     mapping[filebase] = smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
-master_mapping = pd.concat(mapping.values(),ignore_index=True,sort=False)
+master_mapping = pd.concat(mapping.values(),ignore_index=True)#,sort=False)
 print 
 
 ##########################################
