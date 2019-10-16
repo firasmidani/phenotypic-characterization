@@ -31,7 +31,7 @@ on Windows:
 
 ```pip install -r requirements.txt```
 
-# Package dependencies
+## Package dependencies
 
 If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test it right away. The other requirements are dependencies for the before-mentioned packages. 
 
