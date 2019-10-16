@@ -228,7 +228,7 @@ class GrowthPlate(object):
 
         self.key = self.key.join(joint_df)
         
-    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']},thinning=1,permute=False,nperm=10):
+    def runTestGP(self,hypothesis={'H0':['Time'],'H1':['Time','Sample_ID']},thinning=11,permute=False,nperm=10):
 
         joint_df = self.time.join(self.data)
 
