@@ -4,7 +4,7 @@ repository for wrangling and analysing data from biolog-based phenotypic charact
 
 
 **Download Repository (code) — required**
-```ogit clone https://github.com/firasmidani/phenotypic-characterization.git```o
+```git clone https://github.com/firasmidani/phenotypic-characterization.git```o
 
 **Set-up a local python environment [optional]**
 
