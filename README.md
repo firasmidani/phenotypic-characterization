@@ -58,7 +58,8 @@ subprocess32==3.5.4
 
 
 **Basic Usage**
-simply call amiga.py with python and provide the only required argument  that points to the working directory
+
+simply call ```amiga.py``` with python and provide the only required argument  that points to the working directory
 
 ```python
 python amiga.py 
