@@ -32,30 +32,11 @@ on Windows:
 
 ```pip install -r requirements.txt```
 
-## Package dependencies
+## Package dependencies or requirements
 
-If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. The other requirements are dependencies for the before-mentioned packages. 
+See requirements.txt for full list of dependencies. 
 
-**Requirements**
-make sure that your python environment has the following requirements:
-```
-backports.functools-lru-cache==1.5
-cycler==0.10.0
-decorator==4.4.0
-GPy==1.9.8
-kiwisolver==1.1.0
-matplotlib==2.2.4
-numpy==1.16.5
-pandas==0.24.2
-paramz==0.9.5
-pyparsing==2.4.2
-python-dateutil==2.8.0
-pytz==2019.3
-scipy==1.2.2
-seaborn==0.9.0
-six==1.12.0
-subprocess32==3.5.4
-```
+If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. 
 
 ## How to set-up your working directory?
 
