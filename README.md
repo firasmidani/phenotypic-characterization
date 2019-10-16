@@ -35,7 +35,7 @@ on Windows:
 
 
 
-#Requirements
+**Requirements**
 make sure that your python environment has the following requirements:
 ```
 backports.functools-lru-cache==1.5
@@ -57,7 +57,7 @@ subprocess32==3.5.4
 ```
 
 
-#Basic Usage
+**Basic Usage**
 simply call amiga.py with python and provide the only required argument  that points to the working directory
 
 ```python
