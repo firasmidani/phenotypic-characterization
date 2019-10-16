@@ -111,7 +111,7 @@ python amiga.py
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
-If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```-hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time) + f(Substrate)```).
+If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```-hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time + Substrate)```).
 ```python
 
 python amiga.py 
