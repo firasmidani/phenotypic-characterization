@@ -7,11 +7,11 @@ repository for wrangling and analysing data from biolog-based phenotypic charact
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
-or sipmly download as zip folder and extract. 
+or simply download as zip folder and extract. 
 
 ## Set-up a local python environment [optional]
 
-**Make sure your computer has virtual environments for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
+**Make sure your computer has virtual environments (e.g. virtualenv) for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
 Virtual environments allow you to create a virtual copy of your machine’s python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
 
 on macOs and Linux: 
@@ -26,7 +26,6 @@ on Windows:
 
 ```virtualenv .```
 
-
 ```source bin/activate``` 
 
 **Install requirements**
@@ -35,7 +34,7 @@ on Windows:
 
 ## Package dependencies
 
-If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test it right away. The other requirements are dependencies for the before-mentioned packages. 
+If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. The other requirements are dependencies for the before-mentioned packages. 
 
 **Requirements**
 make sure that your python environment has the following requirements:
@@ -58,13 +57,13 @@ six==1.12.0
 subprocess32==3.5.4
 ```
 
-## How to set-up your wokring directory?
+## How to set-up your working directory?
 
 See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
 
 ## How to run AMiGA and pass arguments via text files
 
-simply call ```amiga.py``` with python and provide the only required argument  that points to the working directory
+Call ```amiga.py``` with python and provide the only required argument that points to the working directory.
 
 ```python
 python amiga.py 
@@ -78,14 +77,14 @@ See readme_metadata_and_parameters.pdf for information on how to pass arguments 
 
 **Basic Usage**
 
-simply call ```amiga.py``` with python and provide the only required argument  that points to the working directory
+Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
 
 ```python
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 ```
 
-Let's say you have 20 plates in your data directory, but you want to only analyze a specifc subset. You can use the *subset* (```-s``` or ```-subset```) argument to specify these conditions. If you are using Biolog plates, you can for example only include certain isolates and certain substrates in your analysis.
+Let's say you have many plates in your data directory, but you only want to  analyze a specifc subset of your data set. You can use the *subset* (```-s``` or ```-subset```) argument to specify the desired conditions. For example, if you are using Biolog plates, you can restrict analysis to speific set of isolates and substrates.
 
 ```python
 
@@ -103,7 +102,8 @@ python amiga.py
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
-Of course, you can also both subset and flag.
+Of course, you can pass these arguments simultaneously.
+
 ```python
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
@@ -111,7 +111,7 @@ python amiga.py
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
-If you want to run a specific hypothesis, you can call it as follows with the *hypothesis* argument (```-h``` or ```-hypothesis```)
+If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```-hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time) + f(Substrate)```).
 ```python
 
 python amiga.py 
