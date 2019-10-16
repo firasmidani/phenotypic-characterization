@@ -3,11 +3,13 @@
 repository for wrangling and analysing data from biolog-based phenotypic characterization
 
 
-## Download Repository (code) [required]**
+## Download Repository (code) [required]
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
-## Set-up a local python environment [optional]**
+or sipmly download as zip folder and extract. 
+
+## Set-up a local python environment [optional]
 
 **Make sure your computer has virtual environments for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
 Virtual environments allow you to create a virtual copy of your machine’s python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
