@@ -64,7 +64,7 @@ simply call ```amiga.py``` with python and provide the only required argument  t
 
 ```python
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 ```
 
 See readme_metadata_and_parameters.pdf for information on how to pass arguments via text file. 
