@@ -71,7 +71,7 @@ Let's say you have 20 plates in your data directory, but you want to only analyz
 ```python
 
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;D-Trehalose'
 ```
 
@@ -80,14 +80,14 @@ Maybe some of the wells in your data were noisy, you can flag those wells with t
 ```python
 
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
 Of course, you can also both subset and flag.
 ```python
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53'
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
@@ -96,7 +96,7 @@ If you want to run a specific hypothesis, you can call it as follows with the *h
 ```python
 
 python amiga.py 
-	-i /Users/firasmidani/Downloads/20191011/ 
+	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;D-Trehalose'
 	-h 'H0:Time;H0:Time+Substrate'
 ```
