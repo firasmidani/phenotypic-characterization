@@ -27,7 +27,7 @@ on Windows:
 
 ```source bin/activate``` 
 
-*Install requirements*
+**Install requirements**
 
 ```pip install -r requirements.txt```
 
