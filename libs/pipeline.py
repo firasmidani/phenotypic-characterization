@@ -1,6 +1,7 @@
 #!/usr/env/bin python
 
 # import off-the-shelf libraries
+import re
 import os
 import sys
 import GPy, scipy
@@ -30,6 +31,365 @@ from libs import classical,growth,plates
 
 #sys.path.append("/data/davidalb/users/fsm/biolog/metadata")
 #from flags import *
+
+def initializeParameter(arg_files,arg_in,arg_value,sep=',',integerize=False):
+    '''
+
+    ARGs:
+        arg_files (dictionary) -- keys are parameters, values are location of paramter files
+        arg_in  (str) -- argument parsed by script
+        arg_value (str) -- parameter, e.g. META, FLAG, HYPO, SUBSET, or INTERVAL
+        sep (str) -- delimiter
+        integerize (boolean) -- whether to conver values in a list to integers
+    '''
+
+    if arg_in is None:
+        arg_dict = checkDictTxt(arg_files[arg_value],verbose=True);
+    elif len(arg_in)>0:
+        arg_dict = checkArgText(arg_in,sep=sep);
+    else:
+        arg_dict = {};
+
+    if integerize:
+        return integerizeDictValues(arg_dict);
+    else:
+        return arg_dict
+
+
+def checkDictTxt(path,verbose=False,spliton=','):
+
+    exists = os.path.exists(path);
+
+    args = {};
+
+    if exists:
+
+        fid = open(path,'r');
+        
+        for line in fid:
+
+            key,values = line.split(':');
+            values = values.strip('\n').split(spliton);
+            values = [ii.strip() for ii in values];
+            values = [float(ii) if ii.isdigit() else ii for ii in values]
+            args[key] = values
+
+    return args
+
+def checkMetaTxt(path,verbose=False):
+
+    BOOL_meta = os.path.exists(path)
+
+    if not BOOL_meta:
+        df_meta = pd.DataFrame
+        df_meta_plates = [];
+    else:
+        df_meta = pd.read_csv(path,sep='\t',header=0,index_col=None);
+
+    try: 
+        df_meta_plates = df_meta.Plate_ID.values
+    except:
+        df_meta_plates = [];
+
+    if verbose and BOOL_meta: 
+        print 
+        print 'Meta-Data is'
+        print df_meta
+        print 
+    elif verbose:
+        print
+        print 'No meta.txt file found.'
+        print
+
+    return df_meta,df_meta_plates
+
+def checkArgText(command,sep=','):
+    '''Parses command-line text and formats as a dictionary.
+
+    * text is a list of items that are separated by semicolons (;)
+    * each item is a variable name separated from a list of values with a colon (:)
+    * each list has values separated by commmas (,)
+
+    Args:
+        command (str)
+
+    Returns:
+        dictionary with values as lists
+
+    example ARGUMENT 'Isolate:CD630,PRB599;Substrate:Negative Control,D-Trehalose'
+    example OUTPUT {'Isolate':['CD630','PRB599],'Substrate':['Negative Control','D-Trehalose]}
+    '''
+    if command is None:
+        return None
+
+    # strip flanking semicolons or whitespaces then split by semicolon
+    lines = command.strip(';').strip(' ').split(';'); 
+
+    # get names of variables
+    lines_keys = [ii.split(':')[0] for ii in lines];
+
+    # get list of values for all variables
+    lines_values = [re.split(sep,ii.split(':')[1]) for ii in lines]; # why did I use regex here?
+    
+    # re-package variables and their list of values into a dictionary
+    lines_dict = {ii:jj for ii,jj in zip(lines_keys,lines_values)};
+
+    return lines_dict
+
+def integerizeDictValues(dict):
+    '''
+    converts values in a dictionary into integers. this works if values are iterables (e.g. list)
+
+    Args:
+        command (str)
+
+    Returns:
+        dictionary with values as lists of integers
+
+    example ARGUMENT {'CD630_PM1-1':str(500)}
+    example OUTPUT {'CD630_PM1-1':int(500)}
+    '''
+    if dict is None:
+        return None
+
+    return {key:[int(vv) for vv in value] for key,value in dict.iteritems()}
+
+def checkDirectoryExists(directory,generic_name='directory',verbose=False,sys_exit=False,initialize=False):
+    '''
+    Checks if a directory exists. If directory does not exist, it could be initialized. 
+
+    Args:
+        directory (str) -- path
+        generic_name (str) -- used in communication with users
+        verbose (boolean)
+        sys_exit (boolean) -- used to exit in case of error or severe WARNING
+        initialize (boolean)
+
+    Returns:
+        boolean
+    '''
+    exists = os.path.exists(directory);
+
+    if exists and verbose:
+        print('%s is %s\n' % (generic_name,directory))
+        return True
+
+    elif exists: 
+        return True
+
+    elif sys_exit:
+        sys.exit('USER ERROR: %s %s does not exist.\n' % (generic_name,directory))
+
+    elif initialize and verbose:
+        os.makedirs(directory)
+        print('WARNING: %s did not exist but was created.\n' % (directory))
+        return True
+
+    elif initialize:
+        os.makedirs(directory)
+        return True
+
+    elif verbose:
+        print('WARNING: %s does not exist.\n' % (directory))
+        return False
+
+    else:
+        return False
+
+def checkDirectoryNotEmpty(directory,generic_name='Data directory',verbose=False):
+    '''
+    checks that directory is not empty
+
+    Args:
+        directory (str) -- path
+        generic_name (str) -- used in communication with users
+        verbose (boolean)
+    '''
+    if len(os.listdir(directory)) == 0:
+        sys.exit('USER ERROR: %s %s is empty.\n' % (generic_name,directory))
+
+    elif verbose:
+        print('%s %s has %s files:' % (generic_name,directory,len(os.listdir(directory))))
+        printItemizedList(directory)
+        print('\n')
+
+    return True
+
+def dropFlaggedWells(df,flags,verbose=False):
+    '''
+
+    ARGS:
+        df (pandas.DataFrame) must have Plate_IDs and Well as columns
+        flags (dictionary) with Plate_IDs (str) as keys and Wells (stR) as vlaues
+        verbose (boolean)
+
+    Returns: 
+        df (pandas.DataFrame)
+    '''
+
+    if (len(flags)==0) and (verbose):
+        print 'No flag.txt was found.'
+        return df
+
+    elif len(flags)==0:
+        return df
+
+    for plate_id,wells in flags.iteritems():
+
+        mapping_dict = {'Plate_ID':[plate_id],'Well':wells};
+        to_drop = df[df.isin(mapping_dict).sum(1)== len(mapping_dict)].index;
+        df = df.drop(labels=to_drop)
+
+    if verbose:
+        print 'Following flags were detected'
+        print flags
+
+    return df
+
+def subsetWells(df,criteria,verbose=False):
+    ''' subsets form mapping file'''
+
+    if (len(criteria)==0) and (verbose):
+        print 'No subsetting was requested.'
+        return df
+
+    elif len(criteria)==0:
+        return df
+
+    df = df[df.isin(criteria).sum(1)==len(criteria)];
+
+    if verbose:
+        print 'The following criteria was used to subset the data'
+        print criteria
+
+    return df
+
+def smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates):
+
+    if os.path.exists(mapping_path):
+
+        print '%s: Reading %s' % (filebase,mapping_path)
+        df_mapping = pd.read_csv(mapping_path,sep='\t',header=0,index_col=0);
+
+        if 'Plate_ID' not in df_mapping.index:
+
+            df_mapping.loc[:,'Plate_ID'] = [filebase]*df_mapping.shape[0];
+
+    elif filebase in df_meta_plates:
+        
+        print '%s: Found meta-data in meta.txt' % (filebase),
+
+        metadata = df_meta[df_meta.Plate_ID==filebase] # pd.DataFrame
+        biolog = plates.isBiologFromMeta(metadata);
+
+        if biolog:
+            df_mapping = plates.expandBiologMetaData(metadata)
+            print 'and seems to be a BIOLOG plate' 
+
+        else:
+            df_mapping = plates.initKeyFromMeta(metadata,well_ids)
+            print 'and does not seem to be a BIOLOG plate'
+
+    elif plates.isBiologFromName(filebase):
+
+        df_mapping = plates.initializeBiologPlateKey(filebase)
+        print '%s: Did not find file or meta-data but seems to be a BIOLOG plate' % filebase
+       
+    else:
+        df_mapping = pd.DataFrame(index=well_ids,columns=['Plate_ID'],
+                                  data = [filebase]*len(well_ids))
+        
+        print '%s Did not find file or meta-data and does not seem to be a BIOLOG plate' % filebase
+
+    df_mapping = df_mapping.reset_index(drop=False)
+
+    return df_mapping
+
+def meltData(df,plate_id):
+    '''
+    no index columns
+    first column is wells 
+    rest of header is time-points so ['Well',0,600,...]
+    values are numeric
+    '''
+
+    #df.T.index.name = 'Time'
+
+    #if df.index.name == 'Well':
+    #    df = df.reset_index();
+
+    #df = pd.melt(df,id_vars='Well',value_name='OD');
+    df = df.melt(id_vars='Time',var_name='Well',value_name='OD')
+    df.Time = df.Time.astype(float);
+    df.loc[:,'Plate_ID'] = [plate_id]*df.shape[0];
+
+    # Well Time OD Plate_ID
+    # ...
+
+    # one plate is 96 wells x 100 time points = 9,600 rows x 4 columns 
+
+    return df
+
+def grabCurve(df,Well_ID,Plate_ID):
+
+    criteria = {'Well':[Well_ID],'Plate_ID':[Plate_ID]};
+    df = df[df.isin(criteria).sum(1)==2];
+    df = df.sort_values(['Plate_ID','Well','Time']);
+
+    #df_time = df.Time;
+    #df_OD = df.OD;
+
+    return df
+
+def grabVariable(df,varb):
+
+    return pd.DataFrame(df.loc[:,varb])
+
+def packGrowthData(df,key):
+    
+    time = grabVariable(df,'Time')
+    od = grabVariable(df,'OD') 
+
+    return growth.GrowthData(time,od,key)
+
+def subsetCombineData(data,master_mapping):
+
+    wide_data_dict = {}
+    key_dict= {}
+
+    # for each plate_id
+    for pid in data.keys():
+
+        # sub_mapping is wells by meta-data variables (including WEll, Plate_ID)
+        # can be used for GrowthData as key
+        
+        # grab all wells and their info
+        sub_mapping_df = master_mapping[master_mapping.Plate_ID == pid]; 
+
+        # only continue if mapping is not empty
+        if sub_mapping_df.shape[0] > 0:
+            
+            # list all well IDs (usually A1 through H12)
+            wells = list(sub_mapping_df.Well.values)
+            
+            # recall that data[pid] is time (p) x wells (n)
+            # so here you are selecting for wells in sub_mapping
+            key_dict[pid] = sub_mapping_df;
+            wide_data_dict[pid] = data[pid].loc[:,['Time'] + wells]; 
+
+    return wide_data_dict,key_dict
+
+def packageGrowthPlate(data_dict,key_dict):
+
+    ## ll is short for left and rr is short for right
+    gplate_data = reduce(lambda ll,rr: pd.merge(ll,rr,on='Time',how='outer'),data_dict.values());
+    gplate_data = gplate_data.sort_values(['Time']).reset_index(drop=True);
+    gplate_key = pd.concat(key_dict.values())#.set_index(['Sample_ID']).reset_index(drop=True);
+    gplate_data.columns = ['Time'] + list(gplate_key.Sample_ID.values);
+
+    gplate = growth.GrowthPlate(data=gplate_data,key=gplate_key);
+
+    return gplate
 
 def readPlateReaderFolder(folderpath,save=False,save_dirname='../data_formatted',interval=600,interval_dict={}):
     
@@ -247,6 +607,25 @@ def modelMultiplePlates(data_dict,summary_dict,plate_list):
             
     return new_summary_dict,pred_data_dict
 
+
+def printItemizedList(directory,sort=True):
+    '''
+    prints a list of the contents in a directory
+
+    ARGs:
+        directory (str)
+        sort (boolean)
+
+    Returns:
+        None
+    '''
+    if sort: 
+        items = sorted(os.listdir(directory));
+
+    for item in items:
+        print item
+
+    return None
 
 def visualCheck(data_dict,summary_dict,plate_list,save_dirname="../figures"):
     
