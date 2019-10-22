@@ -55,7 +55,7 @@ conda install -c conda-forge gpy
 
 See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder and your data files should be saved inside it. Each data file should be structured as wells x time. The first column must be your Well ID (i.e. A1, B1, ... H11, H12).
 
-## How to run AMiGA and pass arguments via text files
+## How to run AMiGA and pass arguments via text files?
 
 See `instructions.pdf` for information on how to format your input data and pass arguments via text file. 
 
@@ -71,7 +71,7 @@ python amiga.py
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ```
 
-## How to run AMiGA and pass arguments via the command line
+## How to run AMiGA and pass arguments via the command line?
 
 See ```instructions.pdf``` for information on how to format your input data and more details on the different parameters that AMiGA accepts.
 
