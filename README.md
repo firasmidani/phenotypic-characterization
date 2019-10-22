@@ -72,7 +72,7 @@ python amiga.py
 
 ## How to run AMiGA and pass arguments via the command line
 
-See instructions.pdf for information on how to format your input data and more details on the different parameters that AMiGA accepts.
+See ```instructions.pdf``` for information on how to format your input data and more details on the different parameters that AMiGA accepts.
 
 Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
 
