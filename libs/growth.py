@@ -88,7 +88,7 @@ import GPy
 import imp
 import os
 
-from scipy.signal import savgol_filter
+from scipy.signal import find_peaks, peak_prominences, savgol_filter
 import scipy.stats as stats
 
 # IMPORT IN-HOUSE LIBRARIES
@@ -99,6 +99,34 @@ from classical import fit, gompertz, logistic
 from plates import plotPlateGrowth,parseWellLayout
 
 # UTILITY FUNCTIONS 
+
+def callPeaks(x_data):
+    '''
+    detect peaks in data and call them based on height realtive to primary peak
+
+    ARGs
+        x_data (list or numpy.array) of floats
+
+    Returns
+        list of peak indices
+
+    '''
+    called_peaks = [];
+        
+    # find all peaks
+    peaks, _ = find_peaks(x_data);
+
+    # find height of each peak where baseline is neighboring trough
+    counter_heights = peak_prominences(x_data,peaks)[0]; 
+
+    # find maximum peak, indicates primary growth phase
+    max_height = np.max(counter_heights)
+    for pp,cc in zip(peaks,counter_heights):
+        # only call a peak if its height is at least 10% of maximum peak height
+        if cc > 0.1*max_height:
+            called_peaks.append(pp)
+            
+    return called_peaks
 
 def gpDerivative(x,gp):
 
@@ -406,8 +434,8 @@ class GrowthData(object):
         self.time = time.copy();
         self.data = data.copy();
 
-        self.input_time = input_time.copy();
-        self.input_data = input_data.copy();
+        self.input_time = [input_time.copy() if input_time is not None else None][0];
+        self.input_data = [input_data.copy() if input_data is not None else None][0];
 
         self.key = key.copy();
 
@@ -529,8 +557,11 @@ class GrowthMetrics(object):
         self.time = growth.time.copy();
         self.data = growth.data.copy();
 
-        self.input_time = growth.input_time.copy();
-        self.input_data = growth.input_data.copy();
+        self.input_time = [growth.input_time.copy() if growth.input_time is not None else None][0];
+        self.input_data = [growth.input_data.copy() if growth.input_data is not None else None][0];
+
+        #self.input_time = growth.input_time.copy();
+        #self.input_data = growth.input_data.copy();
         
         self.key = growth.key.copy();
         self.mods = growth.mods.copy();
@@ -559,21 +590,6 @@ class GrowthMetrics(object):
         summ_df.loc[self.key.index,:] = [min_v,max_v,baseline_v]
 
         self.key = self.key.join(summ_df)
-
-    def findDiauxicShifts(self):
-        '''
-        IN PROGRESS
-        '''
-        x = self.time.values
-        gp = self.gp_model;        
-        
-        mu,cov = gpDerivative(x,gp)
-
-        mu = np.ravel(mu);
-
-        peaks_idx = scipy.signal.find_peaks_cwt(mu,np.arange(1,25));
-        peaks_time = [time[ind] for ind in peaks_idx];
-
 
     def fitClassical(self,classical_model=None):
         '''Fits OD to a classical model of bacterial growth'''
@@ -626,6 +642,22 @@ class GrowthMetrics(object):
         y = np.ravel(self.data);
         
         return np.trapz(y,x)
+
+    def inferDiauxicShift(self):
+        '''Infers if a diauxic shift exists and returns number of peaks'''
+
+        x = self.time.values
+        gp = self.gp_model;        
+        
+        mu,cov = gpDerivative(x,gp);#print np.ravel(mu)
+
+        peaks = callPeaks(np.ravel(mu))
+
+        if len(peaks)>1:
+            return True,len(peaks)
+        else:
+            return False,1
+
 
     def inferDoublingTime(self,mtype='classical'):
         '''
@@ -714,6 +746,7 @@ class GrowthMetrics(object):
         self.key['GP_d'] = self.inferGP_d()
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
+        self.key['GP_diaux'] = self.inferDiauxicShift()[0] #[1] is number of peaks
         
     def predictClassical(self,classical_model=gompertz):
         '''Predict OD using classical model'''
@@ -739,7 +772,9 @@ class GrowthMetrics(object):
         
         if not ax_arg:
             fig,ax = plt.subplots(figsize=[4,4]);
-         
+        else:
+            ax = ax_arg;
+
         ax.plot(self.time,self.data,lw=5,color=(0,0,0,0.65));
         ax.plot(self.time,self.pred,lw=5,color=(1,0,0,0.65));
         
