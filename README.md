@@ -52,7 +52,7 @@ conda install -c conda-forge gpy
 
 ## How to set-up your working directory?
 
-See `instructions.pdf` for information on how to pass arguments via text file. 
+See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder and your data files should be saved inside it. That's it. 
 
 ## How to run AMiGA and pass arguments via text files
 
