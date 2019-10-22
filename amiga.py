@@ -13,12 +13,10 @@
 
 import os
 import sys
+import time
 import argparse
 import numpy as np
 import pandas as pd
-
-import time
-
 import matplotlib.pyplot as plt
 
 #########################
@@ -26,8 +24,6 @@ import matplotlib.pyplot as plt
 #########################
 
 from libs import plates,growth,pipeline
-#from
-#from libs.pipeline import readPlateReaderFolder
 
 ######################################
 # USER INTERFACING AND INPUT PARSING
@@ -36,16 +32,13 @@ from libs import plates,growth,pipeline
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-i','--input',required=True)
-
 parser.add_argument('-f','--flag',required=False)
 parser.add_argument('-s','--subset',required=False)
 parser.add_argument('-H','--hypothesis',required=False)
 parser.add_argument('-I','--interval',required=False)
-
 parser.add_argument('-v','--verbose',action='store_true',default=False)
 
 #parser.add_argument('--plot-plate-only',action='store_true',default=False)
-
 #parser.add_argument('-m','--merge-results',required=False)
 
 # --plot-wells (plot each desired well)
@@ -55,20 +48,25 @@ parser.add_argument('-v','--verbose',action='store_true',default=False)
 
 args = parser.parse_args();
 
+fpath = args.input
 flag = args.flag;
 subset = args.subset;
 verbose = args.verbose;
 interval = args.interval;
 hypothesis = args.hypothesis;
+
 #plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
 
-directory,mapping,files = {},{},{};
+# are your processing a single file or a folder of files
+isFile,parent,filename = isFileOrFolder(fpath)
 
+# initialize variables
+directory,mapping,files,data = {},{},{},{};
 
 print '#############################################'
-print 'VERIFYING directory STRUCTURE AND USER INPUT'
+print 'VERIFYING WORKING DIRECTORY STRUCTURE'
 print 
-directory['PARENT'] = args.input;
+directory['PARENT'] = parent;
 directory['DATA'] = '%s/data' % directory['PARENT']
 directory['DERIVED'] = '%s/data_derived' % directory['PARENT']
 directory['MAPPING'] = '%s/mapping' % directory['PARENT']
@@ -115,35 +113,24 @@ df_meta, df_meta_plates = pipeline.checkMetaTxt(files['META'],verbose=True)
 print '#############################################'
 print 'READING & ASSEMBLING DATA'
 print
-#if filename:
-#    list_data = [os.path.basename(filename)]
-#else:
-
-
-data = pipeline.readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],interval=600,interval_dict=interval_dict)
-print 
-
-# if plot_plate_only:
-#     # check that each plate has 96 well IDs (in 8x12) format
-
-#     for fname,table in data.iteritems():
-
-#         print fname
-#         print table.head()
-#         actual_well_ids = set(sorted(table.columns.values[1:])); print actual_well_ids
-
-
-#         # if a plate is Biolog, it seem to automatically have 96 wells internally even if rows are missing
-#         expected_well_ids = set(sorted(plates.parseWellLayout().index.values)); print expected_well_ids
-
-#         print expected_well_ids.difference(actual_well_ids)
-
-#     sys.exit()
-
 print '#############################################'
 print 'READING & ASSEMBLING mapping'
 print
-list_data = sorted(os.listdir(directory['DATA']));
+
+# user can path either a filepath or folder
+if isFile:
+    list_data = [filename];
+    filepath = '%s/%s' % (directory['DATA'],filename);
+    filebase = "".join(filename.split('.')[:-1]);
+
+    interval = [interval_dict[filebase][0] if (filebase in interval_dict.keys()) else 600][0]
+    data[filebase] = plates.readPlateReaderData(filepath,interval=interval,save=True,save_dirname=directory['DERIVED']);
+else:
+    list_data = sorted(os.listdir(directory['DATA']));
+    data = pipeline.readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],
+                                          interval=600,interval_dict=interval_dict)
+print 
+
 for filename in list_data:
     filebase = os.path.splitext(filename)[0]; 
     mapping_path = '%s/%s.txt' % (directory['MAPPING'],filebase); print mapping_path
@@ -151,8 +138,7 @@ for filename in list_data:
     mapping[filebase] = pipeline.smartmapping(filebase,mapping_path,well_ids,df_meta,df_meta_plates)
 master_mapping = pd.concat(mapping.values(),ignore_index=True)#,sort=False)
 print
-
-master_mapping =pipeline. dropFlaggedWells(master_mapping,flag_dict,verbose=True);
+master_mapping =pipeline.dropFlaggedWells(master_mapping,flag_dict,verbose=True);
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
 
@@ -174,7 +160,6 @@ wide_data_dict,key_dict = pipeline.subsetCombineData(data,master_mapping)
 gplate = pipeline.packageGrowthPlate(wide_data_dict,key_dict)
 print
 
-
 print '#############################################'
 print 'Running GP Regression'
 print
@@ -192,17 +177,14 @@ if visual_check:
     gplate.addRowColVarbs()
     filepath = '%s/figure.pdf' % (directory['FIGURES'])
     fig,axes = gplate.plot(savefig=True,title="",filepath=filepath,modified=True)
-    
     sys.exit('DONE')
 
 if len(hypo_dict) > 0 :
     print hypo_dict
-
     start = time.time()
     gplate.runTestGP(hypothesis=hypo_dict,thinning=11,permute=True)
     print
     print('ELAPSED TIME:\t%s' % (time.time() - start))
-
     sys.exit('~~~DONE~~~')
 
 #sys.exit()
@@ -213,14 +195,10 @@ sample_mapping_list = [];
 
 for sample_id in sorted(master_mapping.Sample_ID.unique()):
 
-    #sample_id = 32
-
     sample_curve = gplate.extractGrowthData({'Sample_ID':[sample_id]});
-
     sample_metrics = growth.GrowthMetrics(sample_curve);
 
     # check if basicSummary already exists
-
     sample_metrics.basicSummary(unmodified=True);
     sample_metrics.fitGP();
     sample_metrics.inferGPDynamics();
@@ -239,36 +217,6 @@ for sample_id in sorted(master_mapping.Sample_ID.unique()):
 
     sample_output_list.append(sample_output)
     sample_mapping_list.append(sample_metrics.key);
-
-#    if plot_results:
-
-    # if sample_id == 32:
-
-    #     filepath = '%s/plot_results.pdf' % directory['FIGURES']
-
-    #     #print sample_metrics.key.T
-    #     #print type(sample_metrics.key.Row)
-    #     #print sample_metrics.key.Row.values[0]
-    #     #print sample_metrics.key.Row.values[0]-1
-
-    #     r = sample_metrics.key.Row.values[0]-1
-    #     c = sample_metrics.key.Column.values[0]-1
-
-    #     ax = axes[r,c]
-    #     x_data = np.ravel(sample_metrics.time.astype(float).values)
-    #     y_data = np.ravel(sample_metrics.pred.astype(float).values)
-    #     y_data = [1]*len(x_data)
-    #     print ax.get_xlim(),ax.get_yowlim()
-    #     print x_data,y_data
-    #     filepath = '%s/plot_result.pdf' % directory['FIGURES']
-
-    #     ax.plot(x=[0,3],y=[0,3],color=(1,0,0,0.8),lw=10)
-    #     axes[0,0].plot(x=x_data,y=    y_data,color=(1,1,0,0.8),lw=10)
-
-    #     fig.savefig(filepath,filetype='pdf')
-        
-    #     sys.exit('~~~DONE~~~~')
-
 
 sample_output_df = pd.concat(sample_output_list,axis=0)
 sample_mapping_list = pd.concat(sample_mapping_list,axis=0);
