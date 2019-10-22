@@ -76,6 +76,11 @@ Call ```amiga.py``` with python and provide the only required argument of input 
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 ```
+or
+```python
+python amiga.py 
+	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
+````
 
 Let's say you have many plates in your data directory, but you only want to  analyze a specifc subset of your data set. You can use the *subset* (```-s``` or ```-subset```) argument to specify the desired conditions. For example, if you are using Biolog plates, you can restrict analysis to speific set of isolates and substrates.
 
