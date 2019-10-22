@@ -154,6 +154,17 @@ def integerizeDictValues(dict):
 
     return {key:[int(vv) for vv in value] for key,value in dict.iteritems()}
 
+def isFileOrFolder(fpath):
+
+    isFile = os.path.isfile(fpath);
+
+    if isFile:
+        parent = os.path.dirname(os.path.dirname(fpath))
+        filename = os.path.basename(fpath)
+        return isFile,parent,filename
+    else:
+        return isFile,fpath,None
+
 def checkDirectoryExists(directory,generic_name='directory',verbose=False,sys_exit=False,initialize=False):
     '''
     Checks if a directory exists. If directory does not exist, it could be initialized. 
