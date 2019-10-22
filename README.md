@@ -9,11 +9,11 @@ repository for wrangling and analysing data from biolog-based phenotypic charact
 
 or simply download as zip folder and extract. 
 
-# [optional] If you are new to Python
+## [required] Python
 
-I would suggest install a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a> or <a href="https://www.spyder-ide.org/">Spyder</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. I highl
+If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a> or <a href="https://www.spyder-ide.org/">Spyder</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python.
 
-## [optional] Set-up a local python environment 
+## [Required] Set-up a local python environment 
 
 **Make sure your computer has virtual environments (e.g. virtualenv) for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
 Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
@@ -40,7 +40,7 @@ on Windows:
 
 See requirements.txt for full list of dependencies. 
 
-If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. 
+If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. 
 
 ## How to set-up your working directory?
 
