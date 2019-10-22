@@ -50,9 +50,9 @@ If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you shou
 conda install -c conda-forge gpy
 ```
 
-## How to set-up your working directory?
+## How to set-up your working directory and format data?
 
-See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder and your data files should be saved inside it. That's it. 
+See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder and your data files should be saved inside it. Each data file should be structured as wells x time. The first column must be your Well ID (i.e. A1, B1, ... H11, H12).
 
 ## How to run AMiGA and pass arguments via text files
 
