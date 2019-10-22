@@ -3,17 +3,17 @@
 repository for wrangling and analysing data from biolog-based phenotypic characterization
 
 
-## [required] Download repository/code 
+## [Required] Download repository/code 
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
 or simply download as zip folder and extract. 
 
-## [required] Python
+## [Required] Python
 
 If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a> or <a href="https://www.spyder-ide.org/">Spyder</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python.
 
-## [Required] Set-up a local python environment 
+## [Optional] Set-up a local python environment 
 
 **Make sure your computer has virtual environments (e.g. virtualenv) for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
 Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
@@ -36,11 +36,15 @@ on Windows:
 
 ```pip install -r requirements.txt```
 
-## Package dependencies or requirements
+## [Required] Package dependencies or requirements
 
 See requirements.txt for full list of dependencies. 
 
-If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. 
+If you have matplotlib, seaborn, pandas, numpy, scipy, GPy, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for GPy. You can install packages with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentaiton</a>):
+
+```python
+conda install package-name
+```
 
 ## How to set-up your working directory?
 
