@@ -3,16 +3,20 @@
 repository for wrangling and analysing data from biolog-based phenotypic characterization
 
 
-## Download repository/code [required]
+## [required] Download repository/code 
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
 or simply download as zip folder and extract. 
 
-## Set-up a local python environment [optional]
+# [optional] If you are new to Python
+
+I would suggest install a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a> or <a href="https://www.spyder-ide.org/">Spyder</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. I highl
+
+## [optional] Set-up a local python environment 
 
 **Make sure your computer has virtual environments (e.g. virtualenv) for Python (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>)**
-Virtual environments allow you to create a virtual copy of your machine’s python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python.
 
 on macOs and Linux: 
 
