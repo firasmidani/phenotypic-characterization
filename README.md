@@ -54,11 +54,16 @@ See `instructions.pdf` for information on how to pass arguments via text file.
 
 See `instructions.pdf` for information on how to format your input data and pass arguments via text file. 
 
-Call ```amiga.py``` with python and provide the only required argument that points to the working directory.
+Call ```amiga.py``` with python and provide the only required argument that points to the working directory or individual filename in the working directory.
 
 ```python
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
+```
+or
+```python
+python amiga.py 
+	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ```
 
 ## How to run AMiGA and pass arguments via the command line
