@@ -244,11 +244,12 @@ class GrowthPlate(object):
 
         df = self.input_data.copy(); # timepoints (t) x wells (n)
 
-        df = df.apply(lambda row: row - df.loc[0,:], axis=1); # subtract baseline
-
         df_max = df.max(0); # pandas.series
         df_min = df.min(0);
         df_baseline = df.iloc[0,:]; 
+
+        df = df.apply(lambda row: row - df.loc[0,:], axis=1); # subtract baseline
+
         df_fc = df_max / df_max.loc[0];
 
         joint_df = pd.concat([df_min,df_max,df_baseline,df_fc],axis=1);
