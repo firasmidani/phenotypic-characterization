@@ -5,7 +5,7 @@ AMiGA is a python-based program that facilitates the high-throughput analysis of
 2. inference of non-standard microbial dynamics such as diauxic shifts, and
 3. hypothesis-driven statistical testing of differences in microbial growth under different environmental conditions. 
 
-AMiGA is a minimalist, modular, and user-friendly program that allows for the analysis of single or multiple files in a single batch. It requires a single command line in the terminal. User arguments can be passed via the terminal or simply using the text-based parameter files described below.
+AMiGA has been designed to be a minimalist, modular, and user-friendly program that allows for the analysis of single or multiple files in a single batch. It requires a single command line in the terminal. User arguments can be passed via the terminal or simply using the text-based parameter files described below.
 
 ## [Required] Download repository/code 
 
