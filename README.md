@@ -19,7 +19,7 @@ If you have not previously worked with python, I would recommending a python dis
 
 ## [Optional] Set-up a local python environment 
 
-Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions in the link instead of mine below, becasue the linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
 **To install virtualenv**
 
@@ -112,7 +112,7 @@ python amiga.py
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
 ```
 
-Maybe some of the wells in your data were noisy, you can flag those wells with the *flag* argument (```-f``` or ```-flag```) as follows. 
+Maybe some of the wells in your data were noisy, you can flag those wells with the *flag* argument (```-f``` or ```--flag```) as follows. 
 
 ```python
 
@@ -130,7 +130,7 @@ python amiga.py
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
-If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```-hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time + Substrate)```).
+If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```--hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time + Substrate)```).
 ```python
 
 python amiga.py 
@@ -141,7 +141,7 @@ python amiga.py
 
 ### Acknowledgements
 
-Many thanks to the rest of the Biolog team in the Britton lab for help in designing and building this workflow: James Collins, Ph.D., Heather Danhof, Ph.D., Colleen Brand, and Robert Britton, Ph.D. This work was supported by the National Institutes of Health (U01AI124290). 
+Many thanks to the rest of the Biolog team in the Britton lab help in designing and building this workflow: James Collins, Ph.D., Heather Danhof, Ph.D., Colleen Brand, and Robert Britton, Ph.D. This work was supported by the National Institutes of Health (U01AI124290). 
 
 
 
