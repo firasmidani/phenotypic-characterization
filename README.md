@@ -15,27 +15,44 @@ or simply download as zip folder and extract.
 
 ## [Required] Python
 
-If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python.
+If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, please try to set-up a local python environment. 
 
 ## [Optional] Set-up a local python environment 
 
-Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>).
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). I recommend that you follow the instructions in the link instead of mine below, becasue the linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix. 
 
 **To install virtualenv**
 
 on macOs and Linux: 
 
-```python -m pip install —user virtualenv```
+```python -m pip install —-user virtualenv```
 
 on Windows: 
 
-```py -m pip install —user virtualenv```
+```py -m pip install —-user virtualenv```
 
 **Setup the environment**
 
+On macOS and Linux
+
 ```virtualenv .```
 
-```source bin/activate``` 
+or
+
+```python -m virtualenv env```
+
+On Windows: 
+```py -m venv env``` # this is will use "env" as the name of the virtual environment
+
+**Activate the environment (you will need to do this everytime you run AMiGA**
+
+On macOS and Linux
+
+```source env/bin/activate``` 
+
+On Windows
+
+```.\env\Scripts\activate```
 
 **Install requirements**
 
