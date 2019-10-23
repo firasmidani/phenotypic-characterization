@@ -11,7 +11,7 @@ AMiGA has been designed to be a minimalist, modular, and user-friendly program t
 
 ```git clone https://github.com/firasmidani/phenotypic-characterization.git```
 
-or simply download as zip folder and extract. 
+or simply download as zip folder and extract. See green button on top right. 
 
 ## [Required] Python
 
