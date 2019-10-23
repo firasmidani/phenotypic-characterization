@@ -36,12 +36,11 @@ on Windows:
 On macOS and Linux
 
 ```virtualenv .```
-
 or
-
 ```python -m virtualenv env```
 
-On Windows: 
+On Windows
+
 ```py -m venv env``` # this is will use "env" as the name of the virtual environment
 
 **Activate the environment (you will need to do this everytime you run AMiGA**
