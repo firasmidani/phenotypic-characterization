@@ -93,7 +93,7 @@ Let's say you have many plates in your data directory, but you only want to  ana
 
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
-	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;D-Trehalose'
+	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
 ```
 
 Maybe some of the wells in your data were noisy, you can flag those wells with the *flag* argument (```-f``` or ```-flag```) as follows. 
@@ -119,7 +119,7 @@ If you want to test a specific hypothesis with GP Regression, you can call it as
 
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
-	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;D-Trehalose'
+	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
 	-h 'H0:Time;H1:Time+Substrate'
 ```
 
