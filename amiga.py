@@ -58,7 +58,7 @@ hypothesis = args.hypothesis;
 #plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
 
 # are your processing a single file or a folder of files
-isFile,parent,filename = isFileOrFolder(fpath)
+isFile,parent,filename = pipeline.isFileOrFolder(fpath)
 
 # initialize variables
 directory,mapping,files,data = {},{},{},{};
@@ -199,7 +199,7 @@ for sample_id in sorted(master_mapping.Sample_ID.unique()):
     sample_metrics = growth.GrowthMetrics(sample_curve);
 
     # check if basicSummary already exists
-    sample_metrics.basicSummary(unmodified=True);
+    #sample_metrics.basicSummary(unmodified=True);
     sample_metrics.fitGP();
     sample_metrics.inferGPDynamics();
     sample_metrics.inferDoublingTime(mtype='GP');
