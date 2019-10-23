@@ -19,7 +19,7 @@ If you have not previously worked with python, I would recommending a python dis
 
 ## [Optional] Set-up a local python environment 
 
-Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). I recommend that you follow the instructions in the link instead of mine below, becasue the linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix. 
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up the native python. This way you can download modules/packages without affecting the dependencies for other applications that require python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions in the link instead of mine below, becasue the linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
 **To install virtualenv**
 
