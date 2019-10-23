@@ -139,4 +139,9 @@ python amiga.py
 	-h 'H0:Time;H1:Time+Substrate'
 ```
 
+### Acknowledgements
+
+Many thanks to the rest of the Biolog team in the Britton lab for help in designing and building this workflow: James Collins, Ph.D., Heather Danhof, Ph.D., Colleen Brand, and Robert Britton, Ph.D. This work was supported by the National Institutes of Health (U01AI124290). 
+
+
 
