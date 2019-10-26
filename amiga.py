@@ -2,7 +2,7 @@
 
 # Firas Said Midani
 # Start date: 2019-09-10
-# Final date: 2019-10-14
+# Final date: 2019-10-25
 
 # DESCRIPTION driver script for analyzing microbial growth curves
 
@@ -48,7 +48,7 @@ parser.add_argument('-v','--verbose',action='store_true',default=False)
 
 args = parser.parse_args();
 
-fpath = args.input
+fpath = args.input;
 flag = args.flag;
 subset = args.subset;
 verbose = args.verbose;
@@ -84,7 +84,7 @@ pipeline.checkDirectoryExists(directory['PARENT'],'Input directory',verbose=True
 pipeline.checkDirectoryExists(directory['DATA'],'Data directory',verbose=True)
 pipeline.checkDirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
 pipeline.checkDirectoryExists(directory['DERIVED'],'Derived data directory',verbose=True,initialize=True)
-pipeline.checkDirectoryExists(directory['MAPPING'],'Summary directory',verbose=True,initialize=True)
+pipeline.checkDirectoryExists(directory['MAPPING'],'Mapping directory',verbose=True,initialize=True)
 pipeline.checkDirectoryExists(directory['SUMMARY'],'Summary directory',verbose=True,initialize=True)
 pipeline.checkDirectoryExists(directory['FIGURES'],'Figures directory',verbose=True,initialize=True)
 print
@@ -129,7 +129,8 @@ else:
     list_data = sorted(os.listdir(directory['DATA']));
     data = pipeline.readPlateReaderFolder(folderpath=directory['DATA'],save=True,save_dirname=directory['DERIVED'],
                                           interval=600,interval_dict=interval_dict)
-print 
+print
+# either way, you will end up with a dictionary of data frames 
 
 for filename in list_data:
     filebase = os.path.splitext(filename)[0]; 
@@ -141,6 +142,7 @@ print
 master_mapping =pipeline.dropFlaggedWells(master_mapping,flag_dict,verbose=True);
 #master_mapping.to_csv('%s/stitched_mapping.txt' % directory['mapping'],sep='\t',header=True,index=True)
 print
+# master_mapping is a single datafrmae, mapping is a dictionary of datamframes
 
 print '#############################################'
 print 'SUBSETTING MAPPING & DATA BASED ON USER INPUT'

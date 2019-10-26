@@ -747,7 +747,7 @@ class GrowthMetrics(object):
         self.key['GP_d'] = self.inferGP_d()
         self.key['GP_AUC'] = self.inferGP_AUC()[0]
         self.key['GP_td'] = self.inferDoublingTime(mtype='GP');
-        self.key['GP_diaux'] = self.inferDiauxicShift()[0] #[1] is number of peaks
+        #self.key['GP_diaux'] = self.inferDiauxicShift()[0] #[1] is number of peaks
         
     def predictClassical(self,classical_model=gompertz):
         '''Predict OD using classical model'''
