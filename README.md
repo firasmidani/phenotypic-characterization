@@ -98,7 +98,7 @@ python amiga.py
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ```
 or to only plot the raw data
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc --plot-plate-only
 ```
