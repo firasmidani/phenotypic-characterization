@@ -1,9 +1,9 @@
 # phenotypic-characterization
 
 
-*Disclaimer 1:* This repository is still under construction and the package has not been fully completed. Several features and applications have not been fully tested. Please use with caution and consult with me if you have any questions.
+*Installation Note 1:* This repository is still under construction and the package has not been fully completed. Several features and applications have not been fully tested. Please use with caution and consult with me if you have any questions.
 
-*Disclaimer 2:* This repository works only with Python 2. A future release will modernize it for use in Python 3, but for now use Python 2.
+*Installation Note 2:* This repository works only with Python 2. A future release will modernize it for use in Python 3, but for now use Python 2.
 
 AMiGA is a python-based program that facilitates the high-throughput analysis of microbial growth data. It models growth curves with Gaussian Processes (GP) to infer microbial growth parameters such as maximum specific growth rate, doubling time, lag phase, and carrying capacity. It is especially useful for the analysis of Biolog Phenotypic Microarray (PM) data. The flexibility and utility of GP regression enables:
 1. the analysis of microbial growth data that does not follow standard logistic or sigmoidal growth,
