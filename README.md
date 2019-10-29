@@ -93,6 +93,11 @@ or
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ```
+or to only plot the raw data
+```python
+python amiga.py 
+	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc --plot-plate-only
+```
 
 ## How to run AMiGA and pass arguments via the command line?
 
