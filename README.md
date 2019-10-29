@@ -38,6 +38,10 @@ on Windows:
 
 ```py -m pip install —-user virtualenv```
 
+If you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip). For example, on macOS
+
+```conda install virtualenv```
+
 **Setup the environment**
 
 On macOS and Linux
