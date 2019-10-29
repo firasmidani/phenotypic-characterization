@@ -88,12 +88,12 @@ See `instructions.pdf` for information on how to format your input data and pass
 
 Call ```amiga.py``` with python and provide the only required argument that points to the working directory or individual filename in the working directory.
 
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 ```
 or
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ```
@@ -109,20 +109,19 @@ See ```instructions.pdf``` for information on how to format your input data and 
 
 Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
 
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 ```
 or
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/data/od_bacteria.asc
 ````
 
 Let's say you have many plates in your data directory, but you only want to  analyze a specifc subset of your data set. You can use the *subset* (```-s``` or ```-subset```) argument to specify the desired conditions. For example, if you are using Biolog plates, you can restrict analysis to speific set of isolates and substrates.
 
-```python
-
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
@@ -130,8 +129,7 @@ python amiga.py
 
 Maybe some of the wells in your data were noisy, you can flag those wells with the *flag* argument (```-f``` or ```--flag```) as follows. 
 
-```python
-
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
@@ -139,7 +137,7 @@ python amiga.py
 
 Of course, you can pass these arguments simultaneously.
 
-```python
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53'
@@ -147,8 +145,7 @@ python amiga.py
 ```
 
 If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```--hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time, Substrate)```).
-```python
-
+```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
