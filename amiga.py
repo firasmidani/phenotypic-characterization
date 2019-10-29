@@ -38,7 +38,7 @@ parser.add_argument('-H','--hypothesis',required=False)
 parser.add_argument('-I','--interval',required=False)
 parser.add_argument('-v','--verbose',action='store_true',default=False)
 
-#parser.add_argument('--plot-plate-only',action='store_true',default=False)
+parser.add_argument('--plot-plate-only',action='store_true',default=False)
 #parser.add_argument('-m','--merge-results',required=False)
 
 # --plot-wells (plot each desired well)
@@ -55,7 +55,7 @@ verbose = args.verbose;
 interval = args.interval;
 hypothesis = args.hypothesis;
 
-#plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
+plot_plate_only = args.plot_plate_only # need to check that plates are 8x12
 
 # are your processing a single file or a folder of files
 isFile,parent,filename = pipeline.isFileOrFolder(fpath)
@@ -172,9 +172,9 @@ gplate.subtractBaseline()
 
 #gplate.addRowColVarbs()
 
-visual_check = False;#False;#plot_plate_only
+#plot_plate_only = False;#False;#plot_plate_only
 
-if visual_check:
+if plot_plate_only:
 
     gplate.addRowColVarbs()
     filepath = '%s/figure.pdf' % (directory['FIGURES'])
