@@ -151,6 +151,25 @@ python amiga.py
 	-s 'Isolate:PRB952,PRB53;Substrate:Negative Control;alpha-D-Glucose'
 	-h 'H0:Time;H1:Time+Substrate'
 ```
+### What are the information provided by amiga output?
+
+| Column header | Description                                                                                             |
+|---------------|---------------------------------------------------------------------------------------------------------|
+| Plate_ID      | Unique ID for each Biolog plate                                                                         |
+| PM            | Biolog PM 1 or 2                                                                                        |
+| Replicate     | Technical replicate                                                                                     |
+| Min_OD        | Minimal OD of raw data                                                                                  |
+| Max_OD        | Maximum OD of raw data                                                                                  |
+| Baseline_OD   | OD at first time point of raw data                                                                      |
+| Fold Change   | Maximum OD in a well divided by maximum OD in the negative control “A1” well                            |
+| GP_r          | Maximum specific growth rate (i.e. exponential growth rate)                                             |
+| GP_K          | Carrying capacity (should be close to GP_max)                                                           |
+| GP_d          | Growth lag time ** I have yet to verify the validity of this parameters, so don’t dwell on it too much. |
+| GP_AUC        | Area Under the Curve                                                                                    |
+| GP_td         | Doubling time (in minutes)                                                                              |
+| GP_max        | Max OD after log-transformation and subtraction of log OD at T=0                                        |
+
+Note that GP_* indicates variables that were inferred after natural-log tranformation of OD data followed by subtraction of log OD at the first time point of each curve (i.e. log(OD(t)) / log(OD(0)) which is equivalent to OD(t) - OD(0)).
 
 ### Acknowledgements
 
