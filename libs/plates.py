@@ -236,7 +236,7 @@ def findPlateReaderFiles(directory):
 
     for (dirpath, dirnames, filenames) in os.walk(directory):
         for filename in filenames:
-            if filename.endswith(".txt") or filename.endswith(".TXT") or  filename.endswith(".asc"):
+            if filename.endswith(".tsv") or filename.endswith(".txt") or filename.endswith(".TXT") or  filename.endswith(".asc"):
                 sep = ['' if dirpath[-1]=='/' else '/'][0]
                 ls_files.append('%s%s%s' % (dirpath,sep,filename))
     
