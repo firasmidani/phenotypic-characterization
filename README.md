@@ -52,7 +52,7 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 1) Install virtualenv.
 
->```python -m pip install —-user virtualenv```  if you are using the native Python on your machine
+>```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
 >
 >or 
 >
