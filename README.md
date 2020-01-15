@@ -34,49 +34,60 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 Install virtualenv.
 
-```python -m pip install —-user virtualenv``` #if you are using the native Python on your machine
+```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
+
+or 
 
 ```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
-Setup the environment.
+Setup the environment in the folder where you would like to save it. 
 
-```virtualenv .```
+```virtualenv /Users/firasmidani/example/amiga``` # this saves your virtual environment inside the example folder
 
 Activate the environment (you will need to do this everytime you run AMiGA
 
-```source env/bin/activate```
-
-Install requirements.
-
-```pip install -r requirements.txt```
+```source  /Users/firasmidani/example/amiga/bin/activate``` #you have to be in the directory where env is located or pass the full path
 
 **for Windows users** 
 
 Install virtualenv.
 
-```py -m pip install —-user virtualenv```
+```python -m pip install —-user virtualenv```  if you are using the native Python on your machine
 
-But if you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip) as whown below.
+or 
 
-```conda install virtualenv```
+```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
-Setup the environment.
+Setup the environment in the folder where you would like to save it. 
 
-```python -m virtualenv env```
-
+```python -m virtualenv C:\\Users\firasmidani\example\amiga``` # this saves your virtual environment inside the example folder
+ 
 or
 
-```py -m venv env``` # this is will use "env" as the name of the virtual environment
+```py -m venv C:\\Users\firasmidani\example\amiga``` # this is will use "amiga" as the name of the virtual environment
 
 Activate the environment (you will need to do this everytime you run AMiGA)
 
-```.\env\Scripts\activate```
+``` C:\\Users\firasmidani\example\amiga\Scripts\activate```
 
 ## [Required] Package dependencies or requirements
 
+
+Install requirements.
+
+```pip install -r requirements.txt``` if you are using the native Python on your machine
+
+or 
+
+```conda install --file requirements.txt```  # if you are using Anaconda or Miniconda for Python
+
 See `requirements.txt` for full list of dependencies. 
 
-If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for `GPy`. You can install `GPy` in Anaconda with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentation</a>):
+If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for `GPy`. You can try to install `GPy` in Anaconda as follows
+
+```cond ainstall gpy``` 
+
+If this fails, you can install `GPy` in Anaconda with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentation</a>):
 
 ```python
 conda install -c conda-forge gpy
