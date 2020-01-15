@@ -40,13 +40,13 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 >
 >```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
-2) Setup the environment in the folder where you would like to save it. 
+2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
->```virtualenv /Users/firasmidani/example/amiga``` # this saves your virtual environment inside the example folder
+>```virtualenv /Users/firasmidani/example/amiga```
 
-3) Activate the environment (you will need to do this everytime you run AMiGA
+3) Activate the environment (you will need to do this everytime you run AMiGA)
 
->```source  /Users/firasmidani/example/amiga/bin/activate``` #you have to be in the directory where env is located or pass the full path
+>```source  /Users/firasmidani/example/amiga/bin/activate``` 
 
 **for Windows users** 
 
@@ -58,13 +58,13 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 >
 >```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
-2) Setup the environment in the folder where you would like to save it. 
+2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
->```python -m virtualenv C:\\Users\firasmidani\example\amiga``` # this saves your virtual environment inside the example folder
+>```python -m virtualenv C:\\Users\firasmidani\example\amiga``` 
 >
 >or
 >
->```py -m venv C:\\Users\firasmidani\example\amiga``` # this is will use "amiga" as the name of the virtual environment
+>```py -m venv C:\\Users\firasmidani\example\amiga``` 
 
 3) Activate the environment (you will need to do this everytime you run AMiGA)
 
