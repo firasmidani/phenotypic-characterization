@@ -34,11 +34,11 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 1) Install virtualenv.
 
-```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
-
-or 
-
-```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
+>```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
+>
+>or 
+>
+>```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
 2) Setup the environment in the folder where you would like to save it. 
 
