@@ -52,7 +52,7 @@ Install requirements.
 
 ```pip install -r requirements.txt```
 
-**for Windows users: 
+**for Windows users** 
 
 Install virtualenv.
 
