@@ -42,33 +42,33 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 2) Setup the environment in the folder where you would like to save it. 
 
-```virtualenv /Users/firasmidani/example/amiga``` # this saves your virtual environment inside the example folder
+>```virtualenv /Users/firasmidani/example/amiga``` # this saves your virtual environment inside the example folder
 
 3) Activate the environment (you will need to do this everytime you run AMiGA
 
-```source  /Users/firasmidani/example/amiga/bin/activate``` #you have to be in the directory where env is located or pass the full path
+>```source  /Users/firasmidani/example/amiga/bin/activate``` #you have to be in the directory where env is located or pass the full path
 
 **for Windows users** 
 
 1) Install virtualenv.
 
-```python -m pip install —-user virtualenv```  if you are using the native Python on your machine
-
-or 
-
-```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
+>```python -m pip install —-user virtualenv```  if you are using the native Python on your machine
+>
+>or 
+>
+>```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
 2) Setup the environment in the folder where you would like to save it. 
 
-```python -m virtualenv C:\\Users\firasmidani\example\amiga``` # this saves your virtual environment inside the example folder
- 
-or
-
-```py -m venv C:\\Users\firasmidani\example\amiga``` # this is will use "amiga" as the name of the virtual environment
+>```python -m virtualenv C:\\Users\firasmidani\example\amiga``` # this saves your virtual environment inside the example folder
+>
+>or
+>
+>```py -m venv C:\\Users\firasmidani\example\amiga``` # this is will use "amiga" as the name of the virtual environment
 
 3) Activate the environment (you will need to do this everytime you run AMiGA)
 
-``` C:\\Users\firasmidani\example\amiga\Scripts\activate```
+>``` C:\\Users\firasmidani\example\amiga\Scripts\activate```
 
 ## [Required] Package dependencies or requirements
 
