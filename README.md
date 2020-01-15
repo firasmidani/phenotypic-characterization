@@ -34,11 +34,9 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 Install virtualenv.
 
-```python -m pip install —-user virtualenv```
+```python -m pip install —-user virtualenv``` #if you are using the native Python on your machine
 
-But if you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip) as whown below.
-
-```conda install virtualenv```
+```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
 Setup the environment.
 
