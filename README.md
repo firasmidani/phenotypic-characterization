@@ -20,6 +20,8 @@ or simply download as zip folder and extract. See green button on top right.
 
 ## [Required] Python 2
 
+If you are a Mac user, your machine will have Python installed. You can proceed to the following section. 
+
 If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, please try to set-up a local python environment. 
 
 Note: AMiGA is written for use in Python 2. Future release will modernize it so that it can be run in Python 3. 
@@ -28,45 +30,49 @@ Note: AMiGA is written for use in Python 2. Future release will modernize it so 
 
 Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
-**To install virtualenv**
+**for macOS and linux users**
 
-on macOs and Linux: 
+Install virtualenv.
 
 ```python -m pip install —-user virtualenv```
 
-on Windows: 
-
-```py -m pip install —-user virtualenv```
-
-If you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip). For example, on macOS
+But if you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip) as whown below.
 
 ```conda install virtualenv```
 
-**Setup the environment**
-
-On macOS and Linux
+Setup the environment.
 
 ```virtualenv .```
-or
+
+Activate the environment (you will need to do this everytime you run AMiGA
+
+```source env/bin/activate```
+
+Install requirements.
+
+```pip install -r requirements.txt```
+
+**for Windows users: 
+
+Install virtualenv.
+
+```py -m pip install —-user virtualenv```
+
+But if you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip) as whown below.
+
+```conda install virtualenv```
+
+Setup the environment.
+
 ```python -m virtualenv env```
 
-On Windows
+or
 
 ```py -m venv env``` # this is will use "env" as the name of the virtual environment
 
-**Activate the environment (you will need to do this everytime you run AMiGA**
-
-On macOS and Linux
-
-```source env/bin/activate``` 
-
-On Windows
+Activate the environment (you will need to do this everytime you run AMiGA)
 
 ```.\env\Scripts\activate```
-
-**Install requirements**
-
-```pip install -r requirements.txt```
 
 ## [Required] Package dependencies or requirements
 
