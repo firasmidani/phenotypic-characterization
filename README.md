@@ -85,7 +85,7 @@ See `requirements.txt` for full list of dependencies.
 
 If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for `GPy`. You can try to install `GPy` in Anaconda as follows
 
-```cond ainstall gpy``` 
+```conda install gpy``` 
 
 If this fails, you can install `GPy` in Anaconda with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentation</a>):
 
