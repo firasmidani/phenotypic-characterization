@@ -46,7 +46,7 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
->```virtualenv /Users/firasmidani/example/amiga```
+>```python -m virtualenv /Users/firasmidani/example/amiga```
 
 3) Activate the environment (you will need to do this everytime you run AMiGA)
 
