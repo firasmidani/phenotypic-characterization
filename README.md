@@ -31,7 +31,7 @@ Note: AMiGA is written for use in Python 2. Future release will modernize it so 
 
 ## [Optional] Set-up a local python environment 
 
-Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a> or <a href="https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/">here</a> if you plan to use conda . __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
 **for macOS and linux users of Python 2**
 
