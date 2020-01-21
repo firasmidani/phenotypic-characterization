@@ -79,7 +79,7 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 ## [Required] Package dependencies or requirements
 
-Install requirements.
+Install requirements. If you plan to run AMiGA in a virtual environment, make sure that you activate the environment first.
 
 ```pip install -r requirements.txt``` if you are using the native Python on your machine
 
