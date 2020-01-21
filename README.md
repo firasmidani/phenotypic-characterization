@@ -1,7 +1,7 @@
 # phenotypic-characterization
 
 
-*Installation Note1:*
+*Installation Notes:*
 1. This repository is still under construction and the package has not been fully completed. Several features and applications have not been fully tested. Please use with caution and consult with me if you have any questions.
 2. This repository works only with Python 2. A future release will modernize it for use in Python 3, but for now use Python 2.
 3. If you are having trouble installing and running AMiGA on your machine, please let me know and I may be able to help. 
