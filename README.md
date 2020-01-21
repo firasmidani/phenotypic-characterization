@@ -22,9 +22,9 @@ or simply download as zip folder and extract. See green button on top right.
 
 ## [Required] Python 2
 
-If you are a Mac user, your machine will have Python installed. You can proceed to the following section. 
+If you are a Unix or Mac user, your machine will have Python installed. You can proceed to the following section. 
 
-If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, please try to set-up a local python environment. 
+If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, you may want to try to set-up a local python environment. 
 
 Note: AMiGA is written for use in Python 2. Future release will modernize it so that it can be run in Python 3. So please make sure that you are using Python 2. You can check the python version in your terminal:
 
@@ -78,7 +78,6 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 >```source activate amiga```
 
 ## [Required] Package dependencies or requirements
-
 
 Install requirements.
 
