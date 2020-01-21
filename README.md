@@ -39,10 +39,7 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 1) Install virtualenv.
 
 >```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
->
->or 
->
->```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
+
 
 2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
@@ -57,10 +54,6 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 1) Install virtualenv.
 
 >```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
->
->or 
->
->```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
 2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
@@ -69,6 +62,20 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 3) Activate the environment (you will need to do this everytime you run AMiGA)
 
 >``` C:\\Users\firasmidani\example\amiga\Scripts\activate```
+
+**if you are using conda**
+
+1) Install virtualenv.
+
+>```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
+
+2) Setup the environment named amiga. It will be set-up by default in the local conda directory.
+
+>```conda create -n amiga```
+
+3) Activate the environment (you will need to do this everytime you run AMIGA)
+
+>```source activate amiga```
 
 ## [Required] Package dependencies or requirements
 
