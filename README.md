@@ -34,7 +34,7 @@ Note: AMiGA is written for use in Python 2. Future release will modernize it so 
 
 Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
-**for macOS and linux users**
+**for macOS and linux users of Python 2**
 
 1) Install virtualenv.
 
@@ -52,7 +52,7 @@ Virtual environments allow you to create a virtual copy of your machine’s Pyth
 
 >```source  /Users/firasmidani/example/amiga/bin/activate``` 
 
-**for Windows users** 
+**for Windows users of Python 2** 
 
 1) Install virtualenv.
 
