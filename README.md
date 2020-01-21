@@ -107,7 +107,7 @@ See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder a
 
 See `instructions.pdf` for information on how to format your input data and pass arguments via text file. 
 
-Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass amiga.py with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
+Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass `amiga.py` with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
 
 Now, you can all ```amiga.py``` with python and provide the only required argument that points to the working directory or individual filename in the working directory.
 
@@ -130,7 +130,7 @@ python amiga.py
 
 See ```instructions.pdf``` for information on how to format your input data and more details on the different parameters that AMiGA accepts.
 
-Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass amiga.py with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
+Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass `amiga.py` with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
 
 
 Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
