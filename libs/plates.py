@@ -775,7 +775,7 @@ def initializeBiologPlateKey(plate_id,simple=False):
 
     list_keys = ['Plate_ID','Isolate','PM','Replicate'];
 
-    iso,pmn,rep = parsePlateName(plate_id,simple=False);   
+    iso,pmn,rep = parsePlateName(plate_id,simple=simple);   
 
     df_meta = pd.DataFrame(index=list_keys,data=[plate_id,iso,int(pmn),int(rep)]).T
 
@@ -908,9 +908,7 @@ def readPlateReaderData(filepath,interval=600,save=False,save_dirname=None):
     skiprows,index_col = findFirstRow(filepath); #print skiprows
 
     df = pd.read_csv(filepath,sep='\t',header=None,index_col=index_col,skiprows=skiprows);
-
     df.columns = listTimePoints(interval=interval,numTimePoints=df.shape[1])
-
     if index_col==None:
         df.index = parseWellLayout(order_axis=0).index.values
 

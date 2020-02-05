@@ -18,7 +18,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+ls
 #########################
 # IMPORT USER LIBRARIES
 #########################
@@ -82,7 +82,7 @@ files['INTERVAL'] = '%s/interval.txt' % directory['PARAMETERS']
 
 pipeline.checkDirectoryExists(directory['PARENT'],'Input directory',verbose=True,sys_exit=True)
 pipeline.checkDirectoryExists(directory['DATA'],'Data directory',verbose=True)
-pipeline.checkDirectoryNotEmpty(directory['DATA'],'Data directory',verbose)
+pipeline.checkDirectoryNotEmpty(directory['DATA'],'Data directory',verbose=True)
 pipeline.checkDirectoryExists(directory['DERIVED'],'Derived data directory',verbose=True,initialize=True)
 pipeline.checkDirectoryExists(directory['MAPPING'],'Mapping directory',verbose=True,initialize=True)
 pipeline.checkDirectoryExists(directory['SUMMARY'],'Summary directory',verbose=True,initialize=True)
@@ -122,7 +122,6 @@ if isFile:
     list_data = [filename];
     filepath = '%s/%s' % (directory['DATA'],filename);
     filebase = "".join(filename.split('.')[:-1]);
-
     interval = [interval_dict[filebase][0] if (filebase in interval_dict.keys()) else 600][0]
     data[filebase] = plates.readPlateReaderData(filepath,interval=interval,save=True,save_dirname=directory['DERIVED']);
 else:

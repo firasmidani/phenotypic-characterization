@@ -757,7 +757,7 @@ class GrowthMetrics(object):
         #K,r,d,v,y0 = self.params
         
         #### THIS SHOULDNOT PREDETERMINED AS GOMPERTZ !!!!!! ####
-        self.pred = npd.DataFrame(np.array([classical_model(xx,*self.params) for xx in x]),columns=['OD'])
+        self.pred = pd.DataFrame(np.array([classical_model(xx,*self.params) for xx in x]),columns=['OD'])
         self.key['classical_max'] = np.max(self.pred.values)
 
     def predictGP(self):
