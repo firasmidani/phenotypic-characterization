@@ -1,9 +1,10 @@
 # phenotypic-characterization
 
 
-*Installation Note 1:* This repository is still under construction and the package has not been fully completed. Several features and applications have not been fully tested. Please use with caution and consult with me if you have any questions.
-
-*Installation Note 2:* This repository works only with Python 2. A future release will modernize it for use in Python 3, but for now use Python 2.
+*Installation Notes:*
+1. This repository is still under construction and the package has not been fully completed. Several features and applications have not been fully tested. Please use with caution and consult with me if you have any questions.
+2. This repository works only with Python 2. A future release will modernize it for use in Python 3, but for now use Python 2.
+3. If you are having trouble installing and running AMiGA on your machine, please let me know and I may be able to help. 
 
 AMiGA is a python-based program that facilitates the high-throughput analysis of microbial growth data. It models growth curves with Gaussian Processes (GP) to infer microbial growth parameters such as maximum specific growth rate, doubling time, lag phase, and carrying capacity. It is especially useful for the analysis of Biolog Phenotypic Microarray (PM) data. The flexibility and utility of GP regression enables:
 1. the analysis of microbial growth data that does not follow standard logistic or sigmoidal growth,
@@ -20,59 +21,77 @@ or simply download as zip folder and extract. See green button on top right.
 
 ## [Required] Python 2
 
-If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, please try to set-up a local python environment. 
+If you are a Unix or Mac user, your machine will have Python installed. You can proceed to the following section. 
 
-Note: AMiGA is written for use in Python 2. Future release will modernize it so that it can be run in Python 3. 
+If you have not previously worked with python, I would recommending a python distribution such as <a href="http://docs.continuum.io/anaconda/">Anaconda</a>. See this useful <a href="https://fangohr.github.io/blog/installation-of-python-spyder-numpy-sympy-scipy-pytest-matplotlib-via-anaconda.html">guide</a> on installation of Python. If you run into difficulties with installing ```GPy``` using Anaconda, you may want to try to set-up a local python environment. 
+
+Note: AMiGA is written for use in Python 2. Future release will modernize it so that it can be run in Python 3. So please make sure that you are using Python 2. You can check the python version in your terminal:
+
+> python --version
 
 ## [Optional] Set-up a local python environment 
 
-Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see (see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a>). __I recommend that you follow the instructions on this linked page instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
+Virtual environments allow you to create a virtual copy of your machine’s Python without affecting the set-up of the native Python. Accordingly, you can download modules/packages without affecting the dependencies for other applications that require Python. For more info, see <a href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">here</a> or <a href="https://uoa-eresearch.github.io/eresearch-cookbook/recipe/2014/11/20/conda/">here</a> if you plan to use conda . __I recommend that you follow the instructions on linked pages instead of mine below. The linked instructions are more thorough, up-to-date, and delineate differences between installations for Python 2 vs Python 3 and Windows vs Unix.__
 
-**To install virtualenv**
+**for macOS and linux users of Python 2**
 
-on macOs and Linux: 
+1) Install virtualenv.
 
-```python -m pip install —-user virtualenv```
+>```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
 
-on Windows: 
+2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
-```py -m pip install —-user virtualenv```
+>```python -m virtualenv /Users/firasmidani/example/amiga```
 
-If you are using Anaconda or Miniconda for Python, you should install virtualenv with conda (not pip). For example, on macOS
+3) Activate the environment (you will need to do this everytime you run AMiGA)
 
-```conda install virtualenv```
+>```source  /Users/firasmidani/example/amiga/bin/activate``` 
 
-**Setup the environment**
+**for Windows users of Python 2** 
 
-On macOS and Linux
+1) Install virtualenv.
 
-```virtualenv .```
-or
-```python -m virtualenv env```
+>```python -m pip install —-user virtualenv``` # if you are using the native Python on your machine
 
-On Windows
+2) Setup the environment in the folder where you would like to save it. Here, I name the environment amiga.
 
-```py -m venv env``` # this is will use "env" as the name of the virtual environment
+>```python -m virtualenv C:\\Users\firasmidani\example\amiga``` 
 
-**Activate the environment (you will need to do this everytime you run AMiGA**
+3) Activate the environment (you will need to do this everytime you run AMiGA)
 
-On macOS and Linux
+>``` C:\\Users\firasmidani\example\amiga\Scripts\activate```
 
-```source env/bin/activate``` 
+**if you are using conda**
 
-On Windows
+1) Install virtualenv.
 
-```.\env\Scripts\activate```
+>```conda install virtualenv``` # if you are using Anaconda or Miniconda for Python
 
-**Install requirements**
+2) Setup the environment named amiga. It will be set-up by default in the local conda directory.
 
-```pip install -r requirements.txt```
+>```conda create -n amiga```
+
+3) Activate the environment (you will need to do this everytime you run AMIGA)
+
+>```source activate amiga```
 
 ## [Required] Package dependencies or requirements
 
+Install requirements. If you plan to run AMiGA in a virtual environment, make sure that you activate the environment first.
+
+```pip install -r requirements.txt``` if you are using the native Python on your machine
+
+or 
+
+```conda install --file requirements.txt```  # if you are using Anaconda or Miniconda for Python
+
 See `requirements.txt` for full list of dependencies. 
 
-If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for `GPy`. You can install `GPy` in Anaconda with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentation</a>):
+If you have `matplotlib`, `seaborn`, `pandas`, `numpy`, `scipy`, `GPy`, you should be able to test AMiGA right away. The other packages in requirements.txt are dependencies for these main ones. Anaconda distributions typically have all of these except for `GPy`. You can try to install `GPy` in Anaconda as follows
+
+```conda install gpy``` 
+
+If this fails, you can install `GPy` in Anaconda with conda as follows (see <a href="https://docs.anaconda.com/anaconda/user-guide/tasks/install-packages/">documentation</a>):
 
 ```python
 conda install -c conda-forge gpy
@@ -86,7 +105,9 @@ See `instructions.pdf`. At the very bare minimum, you need a ```data``` folder a
 
 See `instructions.pdf` for information on how to format your input data and pass arguments via text file. 
 
-Call ```amiga.py``` with python and provide the only required argument that points to the working directory or individual filename in the working directory.
+Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass `amiga.py` with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
+
+Now, you can call ```amiga.py``` with python and provide the only required argument that points to the working directory or individual filename in the working directory.
 
 ```sh
 python amiga.py 
@@ -106,6 +127,9 @@ python amiga.py
 ## How to run AMiGA and pass arguments via the command line?
 
 See ```instructions.pdf``` for information on how to format your input data and more details on the different parameters that AMiGA accepts.
+
+Before you proceed, make sure that (a) your terminal is currently operating inside the `phenotypic-characterization` folder or that you pass `amiga.py` with the proper path (e.g. `/Users/firasmidani/phenotypic-characterization/amiga.py`), and (b) if you would like to use a virtual environment, make sure that you have activated it. 
+
 
 Call ```amiga.py``` with python and provide the only required argument of input (```-i``` or ```--input```) that points to the working directory
 
@@ -144,7 +168,7 @@ python amiga.py
 	-f 'PRB953_PM1-1:G10;PRB952_PM1-1:C3'
 ```
 
-If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-h``` or ```--hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time, Substrate)```).
+If you want to test a specific hypothesis with GP Regression, you can call it as follows with the *hypothesis* argument (```-H``` or ```--hypothesis```). This assumes a the null hypothesis (```OD ~ f(Time)```) and an alternative hypothesis (```OD ~ f(Time, Substrate)```).
 ```sh
 python amiga.py 
 	-i /Users/firasmidani/tecan/xra/ 
