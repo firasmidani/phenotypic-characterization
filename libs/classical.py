@@ -189,6 +189,7 @@ def richards(x, A, u, d, v, y0):
 def optimize_initial_u(function,x,y):
     '''Try pre-determined initial guess of u (i.e. growth rate) and return the one that results in lowest SSE
     '''
+
     ini_u_list = [1e-3,1e-2,1e-1,1e0,1e1,1e2];
     sse_list = [];
 
@@ -209,7 +210,8 @@ def optimize_initial_u(function,x,y):
     # numpy version 1.15.4 returns without below unit control
     # TypeError: only integer scalar arrays can be converted to a scalar index
 
-    ind = np.where(sse_list==np.min(sse_list));
+    ind = np.where(np.min(sse_list)==sse_list)[0];
+
     if isinstance(ind,np.ndarray) and ind.shape[0]==1:
         ind = ind[0];
     elif isinstance(ind,list) and len(ind)==1:
@@ -217,7 +219,6 @@ def optimize_initial_u(function,x,y):
     elif isinstance(ind,np.int64) or isinstance(ind,int):
         ind = ind;
 
-    ind = np.where(sse_list==np.min(sse_list))[0];
     ini_u = ini_u_list[ind];
 
     return ini_u

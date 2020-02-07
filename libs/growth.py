@@ -408,7 +408,6 @@ class GrowthPlate(object):
             df = self.input_data.copy().T;
 
         df.columns = np.ravel(self.time.copy().values);
-        print df.head()
         
         summary = self.key;
         #title = summary.Plate[0]
